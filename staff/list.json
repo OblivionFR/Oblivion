@@ -1,0 +1,93 @@
+{
+  "players": [
+    { "username": "SiriHack", "uuid": "3c7a04f3-307a-48eb-a5fb-f33c18fe2fb4", "discord_id": "441661483953160212", "grade": "Administrateur" },
+    { "username": "Bluue", "uuid": "", "discord_id": "290472229194694656", "grade": "Responsable" },
+    { "username": "Dolbou", "uuid": "", "discord_id": "464724641420804096", "grade": "Responsable" },
+    { "username": "Pelfow", "uuid": "80e11df7-ca75-41a3-8de9-977de77448c0", "discord_id": "642465367796744202", "grade": "Modérateur" },
+    { "username": "_Louffy_", "uuid": "", "discord_id": "1257696661786984448", "grade": "Modérateur" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" },
+    { "username": "", "uuid": "", "discord_id": "", "grade": "" }
+  ]
+}
