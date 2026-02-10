@@ -1,0 +1,28 @@
+{
+  "players": [
+    {
+      "pseudo": "AngmarRoiSorcier",
+      "uuid": "111e2222-e33b-44d3-a555-666614170000",
+      "rank": "L'Eternité",
+      "color": "#77fc03",
+      "icon": "",
+      "status": "online"
+    },
+    {
+      "pseudo": "Joueur2",
+      "uuid": "222e3333-e44b-55d3-a666-777614170111",
+      "rank": "VIP",
+      "color": "#00ffff",
+      "icon": "⭐",
+      "status": "offline"
+    },
+    {
+      "pseudo": "Joueur3",
+      "uuid": "333e4444-e55b-66d3-a777-888614170222",
+      "rank": "Membre",
+      "color": "#ffdd00",
+      "icon": "🌟",
+      "status": "online"
+    }
+  ]
+}
