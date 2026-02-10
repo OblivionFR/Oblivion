@@ -1,0 +1,14 @@
+{
+  "Players": {
+    "AngmarRoiSorcier": {
+      "prefix": "&4&lMaster",
+      "suffix": "",
+      "name": "&cAngmar"
+    },
+    "AutreJoueur": {
+      "prefix": "&2[VIP]&r",
+      "suffix": "",
+      "name": "&aJoueurVIP"
+    }
+  }
+}
