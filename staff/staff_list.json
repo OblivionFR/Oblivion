@@ -1,1 +1,28 @@
-
+{
+  "staff": [
+    {
+      "rank": "Admin",
+      "pseudo": "AngmarRoiSorcier",
+      "uuid": "123e4567-e89b-12d3-a456-426614174000",
+      "color": "#FF0000",
+      "icon": "⚔",
+      "status": "online"
+    },
+    {
+      "rank": "Modérateur",
+      "pseudo": "Ruby",
+      "uuid": "987e6543-e21b-12d3-a456-426614174111",
+      "color": "#00FF00",
+      "icon": "🛡",
+      "status": "offline"
+    },
+    {
+      "rank": "Helper",
+      "pseudo": "Frieren",
+      "uuid": "456e1234-e89b-12d3-a456-426614174222",
+      "color": "#77FC03",
+      "icon": "✨",
+      "status": "online"
+    }
+  ]
+}
