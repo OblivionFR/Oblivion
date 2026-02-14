@@ -7,7 +7,7 @@
       "icon": "⚔",
       "status": "online",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -18,7 +18,7 @@
       "icon": "",
       "status": "online",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -29,7 +29,7 @@
       "icon": "",
       "status": "online",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -40,7 +40,7 @@
       "icon": "",
       "status": "offline",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -51,7 +51,7 @@
       "icon": "",
       "status": "offline",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -62,7 +62,7 @@
       "icon": "",
       "status": "offline",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -73,7 +73,7 @@
       "icon": "",
       "status": "offline",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -84,7 +84,7 @@
       "icon": "",
       "status": "offline",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -95,7 +95,7 @@
       "icon": "",
       "status": "offline",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -106,7 +106,7 @@
       "icon": "",
       "status": "offline",
       "cheat": {
-        "detected": false,
+        "detected": "false",
         "list": []
       }
     },
@@ -117,7 +117,7 @@
       "icon": "",
       "status": "online",
       "cheat": {
-        "detected": true,
+        "detected": "true",
         "list": [
           "KillAura",
           "AutoClicker",
