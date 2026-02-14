@@ -5,21 +5,37 @@
       "rank": "L'Eternité",
       "color": "#FF0000",
       "icon": "⚔",
-      "status": "online"
+      "status": "online",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
     },
-    "Ruby": {
+    "Test2": {
       "uuid": "987e6543-e21b-12d3-a456-426614174111",
       "rank": "Modérateur",
       "color": "#00FF00",
-      "icon": "🛡",
-      "status": "offline"
+      "icon": "",
+      "status": "offline",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
     },
-    "Frieren": {
+    "Test3": {
       "uuid": "456e1234-e89b-12d3-a456-426614174222",
       "rank": "Membre",
       "color": "#77fc03",
-      "icon": "✨",
-      "status": "online"
+      "icon": "",
+      "status": "online",
+      "cheat": {
+        "detected": true,
+        "list": [
+          "KillAura",
+          "AutoClicker",
+          "Reach 4.5"
+        ]
+      }
     }
   }
 }
