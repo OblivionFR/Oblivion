@@ -22,12 +22,12 @@
         "list": []
       }
     },
-    "Test2": {
-      "uuid": "987e6543-e21b-12d3-a456-426614174111",
-      "rank": "Modérateur",
+    "Kowann": {
+      "uuid": "27b13264-ca85-4118-8982-54c509b575b1",
+      "rank": "VIP+",
       "color": "#00FF00",
       "icon": "",
-      "status": "offline",
+      "status": "online",
       "cheat": {
         "detected": false,
         "list": []
