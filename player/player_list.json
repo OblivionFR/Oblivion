@@ -1,11 +1,99 @@
 {
   "players": {
     "AngmarRoiSorcier": {
-      "uuid": "123e4567-e89b-12d3-a456-426614174000",
-      "rank": "L'Eternité",
+      "uuid": "38c6be5c-34c3-4daa-8e38-e55f1881e52b",
+      "rank": "Fondateur",
       "color": "#FF0000",
       "icon": "⚔",
       "status": "online",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
+    },
+    "Machettes_": {
+      "uuid": "b83bce7e-b1b9-497a-b5c2-9fd31cbf014b",
+      "rank": "Légend",
+      "color": "#00FF00",
+      "icon": "",
+      "status": "online",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
+    },
+    "Test2": {
+      "uuid": "987e6543-e21b-12d3-a456-426614174111",
+      "rank": "Modérateur",
+      "color": "#00FF00",
+      "icon": "",
+      "status": "offline",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
+    },
+    "Test2": {
+      "uuid": "987e6543-e21b-12d3-a456-426614174111",
+      "rank": "Modérateur",
+      "color": "#00FF00",
+      "icon": "",
+      "status": "offline",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
+    },
+    "Test2": {
+      "uuid": "987e6543-e21b-12d3-a456-426614174111",
+      "rank": "Modérateur",
+      "color": "#00FF00",
+      "icon": "",
+      "status": "offline",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
+    },
+    "Test2": {
+      "uuid": "987e6543-e21b-12d3-a456-426614174111",
+      "rank": "Modérateur",
+      "color": "#00FF00",
+      "icon": "",
+      "status": "offline",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
+    },
+    "Test2": {
+      "uuid": "987e6543-e21b-12d3-a456-426614174111",
+      "rank": "Modérateur",
+      "color": "#00FF00",
+      "icon": "",
+      "status": "offline",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
+    },
+    "Test2": {
+      "uuid": "987e6543-e21b-12d3-a456-426614174111",
+      "rank": "Modérateur",
+      "color": "#00FF00",
+      "icon": "",
+      "status": "offline",
+      "cheat": {
+        "detected": false,
+        "list": []
+      }
+    },
+    "Test2": {
+      "uuid": "987e6543-e21b-12d3-a456-426614174111",
+      "rank": "Modérateur",
+      "color": "#00FF00",
+      "icon": "",
+      "status": "offline",
       "cheat": {
         "detected": false,
         "list": []
