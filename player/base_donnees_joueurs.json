@@ -978,11 +978,11 @@
         "display": {
             "prefix": "",
             "suffix": "",
-            "fullFormatted": "wise_okami"
+            "fullFormatted": "§r§7wise_okami"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:51 CET",
-            "lastSeen": "17 février 2026 à 17:48:36 CET",
+            "lastSeen": "17 février 2026 à 20:45:13 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -4028,6 +4028,27 @@
         "stats": {
             "firstSeen": "17 février 2026 à 20:44:13 CET",
             "lastSeen": "17 février 2026 à 20:44:13 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "twisixx_": {
+        "identity": {
+            "pseudo": "Twisixx_",
+            "uuid": "a6cefd9b5aed4cc4a28dc50449979278",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/6e1ebab3e4ad8f4dac347b280582463f9d309092f1d56b90179b3c02f08d4d1e",
+            "texture_id": "6e1ebab3e4ad8f4dac347b280582463f9d309092f1d56b90179b3c02f08d4d1e"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7Twisixx_"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 20:49:13 CET",
+            "lastSeen": "17 février 2026 à 20:49:13 CET",
             "server": "Serveur Minecraft"
         }
     }
