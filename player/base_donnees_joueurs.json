@@ -3736,5 +3736,26 @@
             "lastSeen": "17 février 2026 à 20:01:43 CET",
             "server": "Serveur Minecraft"
         }
+    },
+    "dyponmc": {
+        "identity": {
+            "pseudo": "dyponMC",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7dyponMC"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 20:03:13 CET",
+            "lastSeen": "17 février 2026 à 20:03:13 CET",
+            "server": "Serveur Minecraft"
+        }
     }
 }
