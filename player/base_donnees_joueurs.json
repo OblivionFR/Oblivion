@@ -31,13 +31,13 @@
             "texture_id": "3d158379fa598452d3ee4c4fc843e933ed87032214fae1654810f23a82696749"
         },
         "display": {
-            "prefix": "MINI-VIP",
+            "prefix": "MINI-VIP ",
             "suffix": "",
-            "fullFormatted": "MINI-VIP xWmbu"
+            "fullFormatted": "§r§3§lMINI-VIP §3xWmbu"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:33 CET",
-            "lastSeen": "17 février 2026 à 17:48:37 CET",
+            "lastSeen": "17 février 2026 à 19:00:23 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -58,7 +58,7 @@
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:33 CET",
-            "lastSeen": "17 février 2026 à 17:38:33 CET",
+            "lastSeen": "17 février 2026 à 19:02:13 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -558,11 +558,11 @@
         "display": {
             "prefix": "",
             "suffix": "",
-            "fullFormatted": "TheGreatCPC"
+            "fullFormatted": "§r§7TheGreatCPC"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:50 CET",
-            "lastSeen": "17 février 2026 à 17:48:36 CET",
+            "lastSeen": "17 février 2026 à 19:00:43 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -829,13 +829,13 @@
             "texture_id": "98c3fc1ece2a270c2c0a4a0e19aa9528470c23fa44a40451f3358e99a786b474"
         },
         "display": {
-            "prefix": "VIP",
+            "prefix": "VIP ",
             "suffix": "",
-            "fullFormatted": "VIP Xerfoow"
+            "fullFormatted": "§r§b§lVIP §bXerfoow"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:51 CET",
-            "lastSeen": "17 février 2026 à 17:48:36 CET",
+            "lastSeen": "17 février 2026 à 19:06:53 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -1010,21 +1010,21 @@
     "trxffic": {
         "identity": {
             "pseudo": "Trxffic",
-            "uuid": "OFFLINE_PLAYER",
-            "isPremium": false
+            "uuid": "65731279fb874a648cb056fb16cb948e",
+            "isPremium": true
         },
         "skin": {
-            "url": "",
-            "texture_id": ""
+            "url": "http://textures.minecraft.net/texture/2c82ed34f43051b8503190d1100a74c13735261c136c5a7e7675fdd8b72a3dab",
+            "texture_id": "2c82ed34f43051b8503190d1100a74c13735261c136c5a7e7675fdd8b72a3dab"
         },
         "display": {
-            "prefix": "Bee",
+            "prefix": "Bee ",
             "suffix": "",
-            "fullFormatted": "Bee Trxffic"
+            "fullFormatted": "§r§eB§6e§ee §f Trxffic"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:51 CET",
-            "lastSeen": "17 février 2026 à 17:48:36 CET",
+            "lastSeen": "17 février 2026 à 18:56:03 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -1251,11 +1251,11 @@
         "display": {
             "prefix": "",
             "suffix": "",
-            "fullFormatted": "Xeltra_"
+            "fullFormatted": "§r§7Xeltra_"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:51 CET",
-            "lastSeen": "17 février 2026 à 17:48:37 CET",
+            "lastSeen": "17 février 2026 à 19:03:43 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -1276,7 +1276,7 @@
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:51 CET",
-            "lastSeen": "17 février 2026 à 18:22:33 CET",
+            "lastSeen": "17 février 2026 à 18:58:33 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -2789,6 +2789,342 @@
         "stats": {
             "firstSeen": "17 février 2026 à 18:48:13 CET",
             "lastSeen": "17 février 2026 à 18:48:13 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "jayzag": {
+        "identity": {
+            "pseudo": "jayzag",
+            "uuid": "645f8d40b0e344bb9ee83071cb6aef52",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/a3bd16079f764cd541e072e888fe43885e711f98658323db0f9a6045da91ee7a",
+            "texture_id": "a3bd16079f764cd541e072e888fe43885e711f98658323db0f9a6045da91ee7a"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7jayzag"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:54:23 CET",
+            "lastSeen": "17 février 2026 à 18:54:23 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "h24fonskar": {
+        "identity": {
+            "pseudo": "h24fonskar",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7h24fonskar"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:54:43 CET",
+            "lastSeen": "17 février 2026 à 18:54:43 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "fantasy0524": {
+        "identity": {
+            "pseudo": "Fantasy0524",
+            "uuid": "1caee02da85345d6bcd54541f1f882a6",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/b4a5433462587987591b836ae41f093970c0722cd204da875b8c650e1ee93f35",
+            "texture_id": "b4a5433462587987591b836ae41f093970c0722cd204da875b8c650e1ee93f35"
+        },
+        "display": {
+            "prefix": "MINI-VIP ",
+            "suffix": "",
+            "fullFormatted": "§r§3§lMINI-VIP §3Fantasy0524"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:55:13 CET",
+            "lastSeen": "17 février 2026 à 18:55:13 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "j44osey_eorgi": {
+        "identity": {
+            "pseudo": "j44Osey_eorgi",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7j44Osey_eorgi"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:56:23 CET",
+            "lastSeen": "17 février 2026 à 18:56:23 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "biegelen37": {
+        "identity": {
+            "pseudo": "biegelen37",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7biegelen37"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:58:03 CET",
+            "lastSeen": "17 février 2026 à 18:58:03 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "zaredli63": {
+        "identity": {
+            "pseudo": "zaredli63",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7zaredli63"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:59:23 CET",
+            "lastSeen": "17 février 2026 à 18:59:23 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "falkaee": {
+        "identity": {
+            "pseudo": "Falkaee",
+            "uuid": "c8044d1a3e984879a4bfe325788117fd",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/f814e80ba8a703dc2636568e3c644ad172454cc2813146c66c11a1db49671bbd",
+            "texture_id": "f814e80ba8a703dc2636568e3c644ad172454cc2813146c66c11a1db49671bbd"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7Falkaee"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:59:53 CET",
+            "lastSeen": "17 février 2026 à 18:59:53 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "neyo_cc_8826": {
+        "identity": {
+            "pseudo": "Neyo_CC_8826",
+            "uuid": "a2bdff2e990b4b80acb38eb22f8a05dd",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/e150e1d4e9c1e563148111081a17f758c23dd18c8f38fdda2199fab770605901",
+            "texture_id": "e150e1d4e9c1e563148111081a17f758c23dd18c8f38fdda2199fab770605901"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7Neyo_CC_8826"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:00:53 CET",
+            "lastSeen": "17 février 2026 à 19:00:53 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "antieclypsia_21": {
+        "identity": {
+            "pseudo": "AntiEclypsia_21",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7AntiEclypsia_21"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:01:13 CET",
+            "lastSeen": "17 février 2026 à 19:01:13 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "cascadedecaca": {
+        "identity": {
+            "pseudo": "CascadeDeCaca",
+            "uuid": "7193fc33fdbf44059323095c47ae11b5",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/9ab24255723767a917c90187c63af0afaabf7724695ecdfd8eda1cadf012a03b",
+            "texture_id": "9ab24255723767a917c90187c63af0afaabf7724695ecdfd8eda1cadf012a03b"
+        },
+        "display": {
+            "prefix": "MINI-VIP ",
+            "suffix": "",
+            "fullFormatted": "§r§3§lMINI-VIP §3CascadeDeCaca"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:01:33 CET",
+            "lastSeen": "17 février 2026 à 19:01:33 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "shov_hy": {
+        "identity": {
+            "pseudo": "Shov_hy",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7Shov_hy"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:01:43 CET",
+            "lastSeen": "17 février 2026 à 19:01:43 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "kykyp": {
+        "identity": {
+            "pseudo": "kykyp",
+            "uuid": "0ec594e4f81c431dbc7968f7440d4fdb",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/d91e402c9488cbdf1ebe3fa1c19a83c14cc368e00ea2a43b10a8b11cc77d9e01",
+            "texture_id": "d91e402c9488cbdf1ebe3fa1c19a83c14cc368e00ea2a43b10a8b11cc77d9e01"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7kykyp"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:03:03 CET",
+            "lastSeen": "17 février 2026 à 19:03:03 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "annv464_lina": {
+        "identity": {
+            "pseudo": "annv464_lina",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7annv464_lina"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:03:23 CET",
+            "lastSeen": "17 février 2026 à 19:03:23 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "enfant10scret": {
+        "identity": {
+            "pseudo": "enfant10scret",
+            "uuid": "50f7ff0ecba540b1b79825d977189a08",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/6e19b5ae29e20fbac858213b3539b10cfd6ad80e9f1f5ed2a022abbb886d7893",
+            "texture_id": "6e19b5ae29e20fbac858213b3539b10cfd6ad80e9f1f5ed2a022abbb886d7893"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7enfant10scret"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:04:03 CET",
+            "lastSeen": "17 février 2026 à 19:04:03 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "slaawnn": {
+        "identity": {
+            "pseudo": "slaawnn",
+            "uuid": "2b3569ddb7d644099fadf68b9e9f8770",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/d3f3cf954ea9290d700d474b72704e29ae209b99c40a3e194e1244076f4752a9",
+            "texture_id": "d3f3cf954ea9290d700d474b72704e29ae209b99c40a3e194e1244076f4752a9"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7slaawnn"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:04:23 CET",
+            "lastSeen": "17 février 2026 à 19:04:23 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "fo_bmon75afo": {
+        "identity": {
+            "pseudo": "fo_bmon75afo",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7fo_bmon75afo"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:04:53 CET",
+            "lastSeen": "17 février 2026 à 19:04:53 CET",
             "server": "Serveur Minecraft"
         }
     }
