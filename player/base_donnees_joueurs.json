@@ -75,7 +75,7 @@
         "display": {
             "prefix": "LEGEND",
             "suffix": "",
-            "fullFormatted": "LEGEND AngmarRoiSorcier"
+            "fullFormatted": " AngmarRoiSorcier"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:33 CET",
@@ -1270,13 +1270,13 @@
             "texture_id": "3a767ac6991494e20d0187102ff926d0fbfe7f0a10b37d8c0974e7dd86148c81"
         },
         "display": {
-            "prefix": "VIP",
+            "prefix": "VIP ",
             "suffix": "",
-            "fullFormatted": "VIP Qsnow"
+            "fullFormatted": "§r§b§lVIP §bQsnow"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:51 CET",
-            "lastSeen": "17 février 2026 à 17:48:37 CET",
+            "lastSeen": "17 février 2026 à 18:22:33 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -1293,11 +1293,11 @@
         "display": {
             "prefix": "",
             "suffix": "",
-            "fullFormatted": "NightSword_x"
+            "fullFormatted": "§r§7NightSword_x"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:51 CET",
-            "lastSeen": "17 février 2026 à 17:48:36 CET",
+            "lastSeen": "17 février 2026 à 18:24:33 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -1325,21 +1325,21 @@
     "kxga_": {
         "identity": {
             "pseudo": "Kxga_",
-            "uuid": "OFFLINE_PLAYER",
-            "isPremium": false
+            "uuid": "1e0ee05762bc46a9abb97a46721416e0",
+            "isPremium": true
         },
         "skin": {
-            "url": "",
-            "texture_id": ""
+            "url": "http://textures.minecraft.net/texture/81a0e48bf0bdd7f2523ca75f14bf09e42054aec65e88477a310176b8303a86cd",
+            "texture_id": "81a0e48bf0bdd7f2523ca75f14bf09e42054aec65e88477a310176b8303a86cd"
         },
         "display": {
             "prefix": "",
             "suffix": "",
-            "fullFormatted": "Kxga_"
+            "fullFormatted": "§r§7Kxga_"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:51 CET",
-            "lastSeen": "17 février 2026 à 17:48:36 CET",
+            "lastSeen": "17 février 2026 à 18:25:33 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -2390,6 +2390,69 @@
         "stats": {
             "firstSeen": "17 février 2026 à 18:17:43 CET",
             "lastSeen": "17 février 2026 à 18:17:43 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "hansidelflic": {
+        "identity": {
+            "pseudo": "Hansidelflic",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7Hansidelflic"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:18:53 CET",
+            "lastSeen": "17 février 2026 à 18:18:53 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "tresors": {
+        "identity": {
+            "pseudo": "Tresors",
+            "uuid": "a7009d7df176408caedbc4b8fb36cb4f",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/d53ecf002b90d82d05a84bd16ce77c7da89add82841b08ca2bf9a8a39c210f84",
+            "texture_id": "d53ecf002b90d82d05a84bd16ce77c7da89add82841b08ca2bf9a8a39c210f84"
+        },
+        "display": {
+            "prefix": "Perso ",
+            "suffix": "",
+            "fullFormatted": "§r§c§lPerso §fTresors"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:19:33 CET",
+            "lastSeen": "17 février 2026 à 18:19:33 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "monsieur_coin": {
+        "identity": {
+            "pseudo": "Monsieur_Coin",
+            "uuid": "3e75949af6ed45f9bb3360974b9192e5",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/6a3502e9c32ad12e642b265902aa85b488d45cf11841b892aaa21fee31d22a37",
+            "texture_id": "6a3502e9c32ad12e642b265902aa85b488d45cf11841b892aaa21fee31d22a37"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7Monsieur_Coin"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 18:20:53 CET",
+            "lastSeen": "17 février 2026 à 18:20:53 CET",
             "server": "Serveur Minecraft"
         }
     }
