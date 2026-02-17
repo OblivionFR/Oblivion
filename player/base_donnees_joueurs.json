@@ -12,11 +12,10 @@
         "display": {
             "prefix": "LEGEND",
             "suffix": "",
-            "fullFormatted": "§r§d§lLEGEND §fAngmarRoiSorcier",
-            "rankHistory": []
+            "fullFormatted": "§r§d§lLEGEND §fAngmarRoiSorcier"
         },
         "stats": {
-            "lastSeen": "17 février 2026 à 16:57:02 CET",
+            "lastSeen": "17 février 2026 à 17:05:55 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -54,11 +53,10 @@
         "display": {
             "prefix": "",
             "suffix": "",
-            "fullFormatted": "§r§7DragonCubique",
-            "rankHistory": []
+            "fullFormatted": "§r§7DragonCubique"
         },
         "stats": {
-            "lastSeen": "17 février 2026 à 16:57:02 CET",
+            "lastSeen": "17 février 2026 à 17:05:55 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -75,11 +73,10 @@
         "display": {
             "prefix": "",
             "suffix": "",
-            "fullFormatted": "§r§7Matadek805",
-            "rankHistory": []
+            "fullFormatted": "§r§7Matadek805"
         },
         "stats": {
-            "lastSeen": "17 février 2026 à 16:57:02 CET",
+            "lastSeen": "17 février 2026 à 17:05:55 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -96,11 +93,10 @@
         "display": {
             "prefix": "MINI-VIP",
             "suffix": "",
-            "fullFormatted": "§r§3§lMINI-VIP §3xWmbu",
-            "rankHistory": []
+            "fullFormatted": "§r§3§lMINI-VIP §3xWmbu"
         },
         "stats": {
-            "lastSeen": "17 février 2026 à 16:57:02 CET",
+            "lastSeen": "17 février 2026 à 17:05:55 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -138,11 +134,10 @@
         "display": {
             "prefix": "VIP",
             "suffix": "",
-            "fullFormatted": "§r§b§lVIP §bXerfoow",
-            "rankHistory": []
+            "fullFormatted": "§r§b§lVIP §bXerfoow"
         },
         "stats": {
-            "lastSeen": "17 février 2026 à 16:57:02 CET",
+            "lastSeen": "17 février 2026 à 17:05:55 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -159,11 +154,10 @@
         "display": {
             "prefix": "",
             "suffix": "",
-            "fullFormatted": "§r§7MVLABAR_",
-            "rankHistory": []
+            "fullFormatted": "§r§7MVLABAR_"
         },
         "stats": {
-            "lastSeen": "17 février 2026 à 16:57:02 CET",
+            "lastSeen": "17 février 2026 à 17:05:55 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -2556,6 +2550,26 @@
         },
         "stats": {
             "lastSeen": "17 février 2026 à 17:00:02 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "sixela2": {
+        "identity": {
+            "pseudo": "Sixela2",
+            "uuid": "bdeede6dd34f4e23875925e2cad277bb",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/3b3069d20037153663b2d87914122ce1ce497bd5fb0187c7e9bcabe02ff0c87c",
+            "texture_id": "3b3069d20037153663b2d87914122ce1ce497bd5fb0187c7e9bcabe02ff0c87c"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7Sixela2"
+        },
+        "stats": {
+            "lastSeen": "17 février 2026 à 17:06:15 CET",
             "server": "Serveur Minecraft"
         }
     }
