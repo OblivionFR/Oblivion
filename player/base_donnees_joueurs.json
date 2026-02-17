@@ -4786,5 +4786,26 @@
             "lastSeen": "17 février 2026 à 21:19:53 CET",
             "server": "Serveur Minecraft"
         }
+    },
+    "vegetor": {
+        "identity": {
+            "pseudo": "vegetor",
+            "uuid": "fee3108c1d3946a58964989a11ecd2b4",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/80cad052a621f2fb74184a717501da5f93f050d7d17556937832cb401ac5f8c7",
+            "texture_id": "80cad052a621f2fb74184a717501da5f93f050d7d17556937832cb401ac5f8c7"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7vegetor"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 21:21:03 CET",
+            "lastSeen": "17 février 2026 à 21:21:03 CET",
+            "server": "Serveur Minecraft"
+        }
     }
 }
