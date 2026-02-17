@@ -1377,11 +1377,11 @@
         "display": {
             "prefix": "ᴏᴋʟᴍ",
             "suffix": "",
-            "fullFormatted": "ᴏᴋʟᴍ wFanta"
+            "fullFormatted": "§r§9ᴏ§bᴋ§9ʟ§bᴍ§9 wFanta"
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:38:51 CET",
-            "lastSeen": "17 février 2026 à 17:48:36 CET",
+            "lastSeen": "17 février 2026 à 19:13:43 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -2211,8 +2211,8 @@
             "isPremium": true
         },
         "skin": {
-            "url": "http://textures.minecraft.net/texture/a7b783ca9c8959ca1929a6cfd94ed151fa04ab8a8f043bd63f597a6146e420b6",
-            "texture_id": "a7b783ca9c8959ca1929a6cfd94ed151fa04ab8a8f043bd63f597a6146e420b6"
+            "url": "http://textures.minecraft.net/texture/ac1ff6a323f877c2b1a835c7735aa31d255b24d8ccd8ef14bcfda68a272f7994",
+            "texture_id": "ac1ff6a323f877c2b1a835c7735aa31d255b24d8ccd8ef14bcfda68a272f7994"
         },
         "display": {
             "prefix": "",
@@ -2221,7 +2221,7 @@
         },
         "stats": {
             "firstSeen": "17 février 2026 à 17:58:13 CET",
-            "lastSeen": "17 février 2026 à 17:58:13 CET",
+            "lastSeen": "17 février 2026 à 19:12:33 CET",
             "server": "Serveur Minecraft"
         }
     },
@@ -3125,6 +3125,48 @@
         "stats": {
             "firstSeen": "17 février 2026 à 19:04:53 CET",
             "lastSeen": "17 février 2026 à 19:04:53 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "legouverneur33": {
+        "identity": {
+            "pseudo": "LeGouverneur33",
+            "uuid": "80ecdb7f0e224aa2b1aaf6a1b83cfa04",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/67721aa6e4ad4651dcd60d33fddb29d8f2102ee3a3d6c837db0a589754b3d059",
+            "texture_id": "67721aa6e4ad4651dcd60d33fddb29d8f2102ee3a3d6c837db0a589754b3d059"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7LeGouverneur33"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:16:53 CET",
+            "lastSeen": "17 février 2026 à 19:16:53 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "jaaehyun": {
+        "identity": {
+            "pseudo": "Jaaehyun",
+            "uuid": "0efea1cfa1ce4bbeb3ca4076c745ca79",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/ded0e9e356e7d118178193aa6d360cf0dd9cd1760ad9e207591677ee928a4a88",
+            "texture_id": "ded0e9e356e7d118178193aa6d360cf0dd9cd1760ad9e207591677ee928a4a88"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7Jaaehyun"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:17:43 CET",
+            "lastSeen": "17 février 2026 à 19:17:43 CET",
             "server": "Serveur Minecraft"
         }
     }
