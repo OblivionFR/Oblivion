@@ -3232,5 +3232,47 @@
             "lastSeen": "17 février 2026 à 19:24:33 CET",
             "server": "Serveur Minecraft"
         }
+    },
+    "cooreii": {
+        "identity": {
+            "pseudo": "cooreii",
+            "uuid": "OFFLINE_PLAYER",
+            "isPremium": false
+        },
+        "skin": {
+            "url": "",
+            "texture_id": ""
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7cooreii"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:26:23 CET",
+            "lastSeen": "17 février 2026 à 19:26:23 CET",
+            "server": "Serveur Minecraft"
+        }
+    },
+    "susurkaev": {
+        "identity": {
+            "pseudo": "Susurkaev",
+            "uuid": "dbd6cd9d46ee482caba0792a46d15203",
+            "isPremium": true
+        },
+        "skin": {
+            "url": "http://textures.minecraft.net/texture/ae9fe02a998b69abcd2e5f2e8e3e458fb303c3bf8bb31125e1db772bb19cfcf9",
+            "texture_id": "ae9fe02a998b69abcd2e5f2e8e3e458fb303c3bf8bb31125e1db772bb19cfcf9"
+        },
+        "display": {
+            "prefix": "",
+            "suffix": "",
+            "fullFormatted": "§r§7Susurkaev"
+        },
+        "stats": {
+            "firstSeen": "17 février 2026 à 19:27:33 CET",
+            "lastSeen": "17 février 2026 à 19:27:33 CET",
+            "server": "Serveur Minecraft"
+        }
     }
 }
