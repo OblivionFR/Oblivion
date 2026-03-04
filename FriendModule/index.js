@@ -1,24 +1,23 @@
 import PogObject from "PogData";
 
 // --- SYSTEME DE MISE A JOUR AUTOMATIQUE ---
-const VERSION = "5.0"; // Change ça sur ton GitHub pour forcer les joueurs à se mettre à jour !
-const GITHUB_URL_CODE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/FriendModule/index.js";
+const VERSION = "4.5"; // À changer sur Github lors des prochaines MAJ
+const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/FriendModule/";
 
 function checkUpdate() {
     new Thread(() => {
         try {
-            let code = FileLib.getUrlContent(GITHUB_URL_CODE + "?t=" + Date.now());
+            let code = FileLib.getUrlContent(GITHUB_BASE + "index.js?t=" + Date.now());
             if (!code) return;
             let match = code.match(/const VERSION = "([0-9.]+)";/);
             if (match && match[1] !== VERSION) {
-                ChatLib.chat("§2[Oblivion] §fMise à jour trouvée (v" + match[1] + ") ! Installation en cours...");
+                ChatLib.chat("§2[Oblivion] §fMise à jour trouvée (v" + match[1] + ") ! Installation...");
                 FileLib.write("GreenFriends", "index.js", code);
                 setTimeout(() => ChatLib.command("ct load", true), 2000);
             }
         } catch(e) {}
     }).start();
 }
-// Lancer la vérification au démarrage
 checkUpdate();
 
 // --- CONFIGURATION ---
@@ -29,23 +28,22 @@ const data = new PogObject("GreenFriends", {
     chatHighlight: true,
     esp3D: true,
     radar: true,
-    proximityAlert: true // Alerte quand une target s'approche
+    proximityAlert: true,
+    targetEsp: true // NOUVEAU: Encadre les ennemis en rouge
 }, "data.json");
 
-// --- DONNÉES CLOUD (Mémoire) ---
-let cloudFriends =[];
+// --- DONNÉES CLOUD ---
+let cloudFriends = [];
 let cloudInvincibles = [];
 let cloudTargets =[];
 let cloudMotd = "";
+
 let lastUpdate = 0;
 let isUpdating = false;
 
-// Variables Interface & Alertes
-const gui = new Gui();
 let actionBarMsg = "";
 let actionBarTimer = 0;
-let guiInput = "";
-let alertedTargets =[]; // Pour ne pas spammer l'alerte de proximité
+let alertedTargets =[];
 
 // --- 1. SYSTÈME DE SYNCHRONISATION (10s) ---
 register("step", () => {
@@ -53,28 +51,29 @@ register("step", () => {
         isUpdating = true;
         new Thread(() => {
             try {
-                let time = "?t=" + Date.now();
-                const baseUrl = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/FriendModule/";
+                let t = "?t=" + Date.now();
+                
+                // On récupère et on FILTRE STRICTEMENT (>= 3 lettres) pour éviter les joueurs fantômes
+                let f = FileLib.getUrlContent(GITHUB_BASE + "default_friend.txt" + t);
+                if (f) cloudFriends = f.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
 
-                let f = FileLib.getUrlContent(baseUrl + "default_friend.txt" + time);
-                if (f) cloudFriends = f.replace(/\r/g, "").split("\n").map(s => s.trim()).filter(s => s.length > 1);
+                let i = FileLib.getUrlContent(GITHUB_BASE + "invincible.txt" + t);
+                if (i) cloudInvincibles = i.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
 
-                let i = FileLib.getUrlContent(baseUrl + "invincible.txt" + time);
-                if (i) cloudInvincibles = i.replace(/\r/g, "").split("\n").map(s => s.trim()).filter(s => s.length > 1);
+                let tg = FileLib.getUrlContent(GITHUB_BASE + "target.txt" + t);
+                if (tg) cloudTargets = tg.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
 
-                let t = FileLib.getUrlContent(baseUrl + "target.txt" + time);
-                if (t) cloudTargets = t.replace(/\r/g, "").split("\n").map(s => s.trim()).filter(s => s.length > 1);
-
-                // NOUVEAU: Cloud MOTD (Message of the day)
-                let m = FileLib.getUrlContent(baseUrl + "motd.txt" + time);
-                if (m && m !== cloudMotd) {
-                    cloudMotd = m;
-                    ChatLib.chat("§6§m---------------------------------------------");
-                    ChatLib.chat("§e§lAnnonce Oblivion : §f" + cloudMotd);
-                    ChatLib.chat("§6§m---------------------------------------------");
-                    World.playSound("random.levelup", 1, 1);
+                let m = FileLib.getUrlContent(GITHUB_BASE + "motd.txt" + t);
+                if (m) {
+                    m = m.replace(/\r/g, "").trim();
+                    if (m.length > 0 && m !== cloudMotd) {
+                        cloudMotd = m;
+                        ChatLib.chat("§6§m---------------------------------------------");
+                        ChatLib.chat("§e§lAnnonce Oblivion : §f" + cloudMotd);
+                        ChatLib.chat("§6§m---------------------------------------------");
+                        World.playSound("random.levelup", 1, 1);
+                    }
                 }
-
                 lastUpdate = Date.now();
             } catch(e) {}
             isUpdating = false;
@@ -82,18 +81,32 @@ register("step", () => {
     }
 }).setFps(1);
 
-// Fonctions de classification
+// Fonction de vérification de grade
 function getStatus(name) {
-    let lower = name.toLowerCase();
+    if (!name) return "NONE";
+    let lower = ChatLib.removeFormatting(name).toLowerCase();
+    
+    // Priorité absolue : Invincibles > Targets > Friends
     if (cloudInvincibles.some(i => i.toLowerCase() === lower)) return "INVINCIBLE";
     if (cloudTargets.some(t => t.toLowerCase() === lower)) return "TARGET";
     if (data.friends.some(f => f.toLowerCase() === lower) || cloudFriends.some(f => f.toLowerCase() === lower)) return "FRIEND";
     return "NONE";
 }
 
-// --- 2. COMMANDES ---
+// --- 2. COMMANDES (FINI LE GUI !) ---
 register("command", (...args) => {
-    if (!args || args.length === 0) return gui.open();
+    if (!args || args.length === 0) {
+        ChatLib.chat("§2§m---------------------------------------------");
+        ChatLib.chat("§2§lOblivion Manager §7(v" + VERSION + ")");
+        ChatLib.chat("§a/lf add <pseudo>    §7- Ajouter un ami local");
+        ChatLib.chat("§a/lf remove <pseudo> §7- Retirer un ami local");
+        ChatLib.chat("§a/lf list            §7- Voir toutes les listes");
+        ChatLib.chat("§a/lf toggle <option> §7- pvp | radar | esp | alert");
+        ChatLib.chat("§a/friendpvp          §7- Bloque/Débloque les coups");
+        ChatLib.chat("§2§m---------------------------------------------");
+        return;
+    }
+    
     let action = args[0].toLowerCase();
     let pseudo = args[1];
 
@@ -101,130 +114,65 @@ register("command", (...args) => {
         if (!data.friends.includes(pseudo)) {
             data.friends.push(pseudo); data.save();
             ChatLib.chat(prefix + "§a" + pseudo + " ajouté !");
+            World.playSound("random.orb", 1, 1);
+        } else {
+            ChatLib.chat(prefix + "§cDéjà dans la liste.");
         }
-    } else if (action === "remove" && pseudo) {
+    } 
+    else if (action === "remove" && pseudo) {
         data.friends = data.friends.filter(f => f.toLowerCase() !== pseudo.toLowerCase());
         data.save();
         ChatLib.chat(prefix + "§c" + pseudo + " retiré.");
-    } else if (action === "list") {
-        ChatLib.chat("§2Amis Locaux: §f" + data.friends.join(", "));
-        ChatLib.chat("§6Stats Cloud: §a" + cloudFriends.length + " Amis §7| §d" + cloudInvincibles.length + " GOD §7| §c" + cloudTargets.length + " Cibles");
-    } else {
-        gui.open();
+        World.playSound("random.break", 1, 1);
+    } 
+    else if (action === "list") {
+        ChatLib.chat("§2Amis Locaux: §f" + (data.friends.length > 0 ? data.friends.join(", ") : "Aucun"));
+        ChatLib.chat("§6Serveur Cloud:");
+        ChatLib.chat(" §a- Amis: §f" + cloudFriends.length);
+        ChatLib.chat(" §d- Invincibles (GOD): §f" + cloudInvincibles.length);
+        ChatLib.chat(" §c- Cibles (Targets): §f" + cloudTargets.length);
+    } 
+    else if (action === "toggle" && pseudo) {
+        let opt = pseudo.toLowerCase();
+        if (opt === "pvp") { data.pvpEnabled = !data.pvpEnabled; ChatLib.chat(prefix + "PvP: " + data.pvpEnabled); }
+        else if (opt === "radar") { data.radar = !data.radar; ChatLib.chat(prefix + "Radar: " + data.radar); }
+        else if (opt === "esp") { data.esp3D = !data.esp3D; ChatLib.chat(prefix + "ESP: " + data.esp3D); }
+        else if (opt === "alert") { data.proximityAlert = !data.proximityAlert; ChatLib.chat(prefix + "Alerte: " + data.proximityAlert); }
+        else ChatLib.chat("§cOptions valides : pvp, radar, esp, alert");
+        data.save();
     }
-}).setName("localfriend");
+}).setName("localfriend").setAliases("lf");
 
-register("command", () => gui.open()).setName("friendgui");
+// Retour du /friendpvp officiel
+register("command", () => {
+    data.pvpEnabled = !data.pvpEnabled;
+    data.save();
+    ChatLib.chat(prefix + (data.pvpEnabled ? "§cPvP Ami ACTIVÉ §7(Danger)" : "§aPvP Ami DÉSACTIVÉ §7(Sécurisé)"));
+}).setName("friendpvp");
 
-// --- 3. INTERFACE GRAPHIQUE (GUI FIXÉ ET RÉPARÉ) ---
-register("renderOverlay", () => {
-    if (!gui.isOpen()) return;
-
-    let cx = Renderer.screen.getWidth() / 2;
-    let cy = Renderer.screen.getHeight() / 2;
-
-    // Fond Principal
-    Renderer.drawRect(Renderer.color(15, 15, 15, 240), cx - 120, cy - 140, 240, 280);
-    Renderer.drawStringWithShadow("§2§lOblivion Manager §7(v" + VERSION + ")", cx - 60, cy - 130);
-
-    // Section Amis
-    Renderer.drawString("§aAmis Locaux:", cx - 110, cy - 100);
-    let y = cy - 85;
-    let displayList = data.friends.slice(0, 6); // Max 6 pour l'affichage
-    displayList.forEach((f, i) => {
-        Renderer.drawString("§f" + f, cx - 100, y);
-        Renderer.drawRect(Renderer.color(200, 50, 50, 255), cx + 70, y - 2, 40, 11);
-        Renderer.drawString("Suppr", cx + 75, y);
-        y += 15;
-    });
-
-    // Ajout d'ami
-    y = cy + 15;
-    Renderer.drawString("§aAjouter:", cx - 110, y);
-    Renderer.drawRect(Renderer.color(255, 255, 255, 30), cx - 60, y - 2, 120, 12);
-    Renderer.drawString(guiInput + (Date.now() % 1000 < 500 ? "_" : ""), cx - 55, y);
-    Renderer.drawRect(Renderer.color(50, 200, 50, 255), cx + 70, y - 2, 40, 12);
-    Renderer.drawString("ADD", cx + 80, y);
-
-    // Options
-    y += 25;
-    Renderer.drawString("§aOptions:", cx - 110, y);
-    
-    // Boutons On/Off (Mieux calculés)
-    drawToggleBtn(cx - 110, cy + 50, 105, 15, "PvP Amis", data.pvpEnabled);
-    drawToggleBtn(cx + 5, cy + 50, 105, 15, "Radar 2D", data.radar);
-    drawToggleBtn(cx - 110, cy + 70, 105, 15, "ESP 3D", data.esp3D);
-    drawToggleBtn(cx + 5, cy + 70, 105, 15, "Alerte Ennemi", data.proximityAlert);
-
-    Renderer.drawString("§8Sync: " + cloudFriends.length + "F / " + cloudInvincibles.length + "I / " + cloudTargets.length + "T", cx - 60, cy + 115);
-});
-
-function drawToggleBtn(x, y, w, h, text, state) {
-    Renderer.drawRect(state ? Renderer.color(50, 200, 50, 200) : Renderer.color(200, 50, 50, 200), x, y, w, h);
-    Renderer.drawStringWithShadow("§f" + text + ": " + (state ? "ON" : "OFF"), x + 5, y + 4);
-}
-
-// Clics réparés avec les bonnes coordonnées
-register("guiMouseClick", (mx, my, button) => {
-    if (!gui.isOpen()) return;
-    let cx = Renderer.screen.getWidth() / 2;
-    let cy = Renderer.screen.getHeight() / 2;
-
-    // Supprimer
-    let listY = cy - 85;
-    let displayList = data.friends.slice(0, 6);
-    displayList.forEach((f, i) => {
-        if (mx >= cx + 70 && mx <= cx + 110 && my >= listY - 2 && my <= listY + 9) {
-            data.friends.splice(i, 1); data.save(); World.playSound("random.click", 1, 1);
-        }
-        listY += 15;
-    });
-
-    // Ajouter
-    if (mx >= cx + 70 && mx <= cx + 110 && my >= cy + 13 && my <= cy + 25) {
-        if (guiInput.length > 2 && !data.friends.includes(guiInput)) {
-            data.friends.push(guiInput); data.save(); guiInput = ""; World.playSound("random.orb", 1, 1);
-        }
-    }
-
-    // Toggles Options
-    if (mx >= cx - 110 && mx <= cx - 5 && my >= cy + 50 && my <= cy + 65) { data.pvpEnabled = !data.pvpEnabled; data.save(); World.playSound("random.click", 1, 1); }
-    if (mx >= cx + 5 && mx <= cx + 110 && my >= cy + 50 && my <= cy + 65) { data.radar = !data.radar; data.save(); World.playSound("random.click", 1, 1); }
-    if (mx >= cx - 110 && mx <= cx - 5 && my >= cy + 70 && my <= cy + 85) { data.esp3D = !data.esp3D; data.save(); World.playSound("random.click", 1, 1); }
-    if (mx >= cx + 5 && mx <= cx + 110 && my >= cy + 70 && my <= cy + 85) { data.proximityAlert = !data.proximityAlert; data.save(); World.playSound("random.click", 1, 1); }
-});
-
-register("guiKey", (char, key) => {
-    if (!gui.isOpen()) return;
-    if (key === 14 && guiInput.length > 0) guiInput = guiInput.slice(0, -1);
-    else if (key === 28 && guiInput.length > 2) {
-        if (!data.friends.includes(guiInput)) { data.friends.push(guiInput); data.save(); guiInput = ""; World.playSound("random.orb", 1, 1); }
-    }
-    else if (key !== 14 && key !== 28 && key !== 1 && key !== 42 && char.toString().length === 1) guiInput += char;
-});
-
-// --- 4. PROTECTION PVP ---
+// --- 3. PROTECTION PVP ABSOLUE ---
 register("attackEntity", (entity, event) => {
     let name = ChatLib.removeFormatting(entity.getName());
-    let status = getStatus(name);
+    let st = getStatus(name);
 
-    if (status === "INVINCIBLE") {
+    if (st === "INVINCIBLE") {
         cancel(event);
         World.playSound("mob.enderdragon.hit", 100, 0.5);
-        actionBarMsg = "§4§l🛡 JOUEUR INVINCIBLE 🛡"; actionBarTimer = 40;
-    } else if (status === "FRIEND" && !data.pvpEnabled) {
+        actionBarMsg = "§4§l🛡 JOUEUR INVINCIBLE (OBLIVION) 🛡";
+        actionBarTimer = 40;
+    } else if (st === "FRIEND" && !data.pvpEnabled) {
         cancel(event);
         World.playSound("random.anvil_land", 100, 0.5);
-        actionBarMsg = "§c§l❌ AMI PROTEGÉ ❌"; actionBarTimer = 40;
+        actionBarMsg = "§c§l❌ NE TAPE PAS TON AMI ❌";
+        actionBarTimer = 40;
     }
 });
 
-// --- 5. VISUELS (RADAR, ESP, ACTION BAR, PROXIMITÉ) ---
+// --- 4. VISUELS (RADAR, ESP, ALERTE PROXIMITÉ) ---
 register("renderOverlay", () => {
     // Action Bar
     if (actionBarTimer > 0) {
-        let w = Renderer.screen.getWidth();
-        Renderer.drawStringWithShadow(actionBarMsg, (w/2) - (Renderer.getStringWidth(actionBarMsg)/2), Renderer.screen.getHeight() - 60);
+        Renderer.drawStringWithShadow(actionBarMsg, (Renderer.screen.getWidth()/2) - (Renderer.getStringWidth(actionBarMsg)/2), Renderer.screen.getHeight() - 60);
         actionBarTimer--;
     }
 
@@ -255,7 +203,6 @@ register("renderOverlay", () => {
         let drawY = rotY * 1.5;
         
         if (Math.sqrt(drawX*drawX + drawY*drawY) < s) {
-            // Couleur : Vert(Ami), Violet/Or(Invincible), Rouge Clignotant(Target)
             let isBlinking = (Date.now() % 600 < 300);
             let color = Renderer.color(0, 255, 0);
             if (st === "INVINCIBLE") color = Renderer.color(180, 0, 255);
@@ -269,7 +216,7 @@ register("renderOverlay", () => {
     Renderer.drawStringWithShadow("§7Radar Oblivion", rx - 35, ry + s + 2);
 });
 
-// Alerte Proximité Ennemi (Targets)
+// Alerte Proximité
 register("step", () => {
     if (!data.proximityAlert) return;
     World.getAllPlayers().forEach(p => {
@@ -281,15 +228,14 @@ register("step", () => {
                 World.playSound("note.bass", 1, 0.5);
                 alertedTargets.push(name);
             } else if (dist >= 20 && alertedTargets.includes(name)) {
-                alertedTargets = alertedTargets.filter(n => n !== name); // Reset quand il s'éloigne
+                alertedTargets = alertedTargets.filter(n => n !== name);
             }
         }
     });
 }).setFps(2);
 
-// ESP 3D
+// ESP 3D & HITBOX POUR LES TARGETS
 register("renderWorld", () => {
-    if (!data.esp3D) return;
     World.getAllPlayers().forEach(p => {
         let name = ChatLib.removeFormatting(p.getName());
         if (name === Player.getName()) return;
@@ -297,29 +243,36 @@ register("renderWorld", () => {
         let st = getStatus(name);
         if (st === "NONE") return;
 
-        let dist = Player.asPlayerMP().distanceTo(p);
-        if (dist < 60) {
+        // Si ESP 3D activé, afficher les textes au-dessus de la tête
+        if (data.esp3D && Player.asPlayerMP().distanceTo(p) < 60) {
             let txt = "§a★ AMI ★";
             if (st === "INVINCIBLE") txt = "§d§l🛡 GOD 🛡";
             if (st === "TARGET") txt = "§c§l⚠ TARGET ⚠";
             Tessellator.drawString(txt, p.getRenderX(), p.getRenderY() + p.getHeight() + 0.5, p.getRenderZ(), 0, true, 0.03, false);
         }
+
+        // NOUVEAUTÉ : HITBOX ROUGE autour des targets (Cibles)
+        if (data.targetEsp && st === "TARGET" && Player.asPlayerMP().distanceTo(p) < 80) {
+            Tessellator.begin(3).lineWidth(3).colorize(1, 0, 0, 1);
+            RenderLib.drawEspBox(p.getRenderX(), p.getRenderY(), p.getRenderZ(), p.getWidth(), p.getHeight(), 1, 0, 0, 0.3, false);
+        }
     });
 });
 
-// --- 6. TABLIST & CHAT HIGHLIGHT ---
+// --- 5. TABLIST & CHAT HIGHLIGHT ---
 register("tick", () => {
     if (!World.isLoaded()) return;
     try {
         let sb = World.getWorld().func_96441_U();
         
-        // Equipe 0: GOD, Equipe 1: Friend, Equipe 2: Target (Tri automatique par nom)
         let tGod = sb.func_96508_e("0_GOD") || sb.func_96527_f("0_GOD"); tGod.func_96666_b("§d§lGod §r§d");
         let tFriend = sb.func_96508_e("1_FRIEND") || sb.func_96527_f("1_FRIEND"); tFriend.func_96666_b("§a§lFriend §r§a");
         let tTarget = sb.func_96508_e("2_TARGET") || sb.func_96527_f("2_TARGET"); tTarget.func_96666_b("§c§lTarget §r§c");
 
         let netHandler = Client.getMinecraft().func_147114_u();
         let iterator = netHandler.func_175106_d().iterator();
+
+        let ChatComponentText = Java.type("net.minecraft.util.ChatComponentText");
 
         while (iterator.hasNext()) {
             let info = iterator.next();
@@ -335,7 +288,7 @@ register("tick", () => {
                 
                 let dName = info.func_178854_k();
                 if (dName == null || dName.func_150254_d().indexOf(colorPrefix) == -1) {
-                     info.func_178859_a(new TextComponent(colorPrefix + name));
+                     info.func_178859_a(new ChatComponentText(colorPrefix + name));
                 }
             }
         }
