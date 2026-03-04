@@ -1,29 +1,9 @@
 import PogObject from "PogData";
 
-// --- SYSTEME DE MISE A JOUR AUTOMATIQUE ---
-const VERSION = "6.1"; 
-const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/FriendModule/";
-
-function checkUpdate() {
-    new Thread(() => {
-        try {
-            let code = FileLib.getUrlContent(GITHUB_BASE + "index.js?t=" + Date.now());
-            if (!code) return;
-            let match = code.match(/const VERSION = "([0-9.]+)";/);
-            if (match && match[1] !== VERSION) {
-                ChatLib.chat("§2[Oblivion] §fMise à jour trouvée (v" + match[1] + ") ! Installation...");
-                FileLib.write("GreenFriends", "index.js", code);
-                setTimeout(() => ChatLib.command("ct load", true), 2000);
-            }
-        } catch(e) {}
-    }).start();
-}
-checkUpdate();
-
-// --- CONFIGURATION LOCALE ---
+// --- CONFIGURATION ---
 const prefix = "§2[Oblivion] ";
 const data = new PogObject("GreenFriends", {
-    friends:[],
+    friends: [],
     pvpEnabled: false,
     chatHighlight: true,
     esp3D: true,
@@ -32,299 +12,258 @@ const data = new PogObject("GreenFriends", {
 }, "data.json");
 
 // --- DONNÉES CLOUD ---
-let cloudFriends =[];
-let cloudInvincibles =[];
+let cloudLegendaries = []; // Les Dieux (JSON)
+let cloudFriends = [];
+let cloudInvincibles = [];
 let cloudTargets = [];
-let cloudBlacklist =[];
-let cloudLegendaries =[]; // Les Dieux
+let cloudBlacklist = [];
 let cloudMotd = "";
 let cloudObjective = "";
 
+// Variables système
 let lastUpdate = 0;
 let isUpdating = false;
-
 let actionBarMsg = "";
 let actionBarTimer = 0;
-let alertedTargets =[];
+let alertedTargets = [];
 
+// Variables Pouvoirs
 let isParalyzed = false;
+let paralysisTimer = 0;
 let hpCache = 20;
 
-// --- 1. SYSTÈME DE SYNCHRONISATION CLOUD ---
+// URL DE BASE (Change bien ton lien si besoin)
+const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/FriendModule/";
+
+// --- 1. SYSTÈME DE SYNCHRONISATION (ROBUSTE) ---
 function fetchCloudData(verbose) {
     if (isUpdating) return;
     isUpdating = true;
-    
+
     new Thread(() => {
         try {
-            let t = "?t=" + Date.now();
-            
-            // Textes basiques
-            let f = FileLib.getUrlContent(GITHUB_BASE + "default_friend.txt" + t);
-            if (f) cloudFriends = f.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
+            let t = "?t=" + Date.now(); // Anti-cache
 
-            let i = FileLib.getUrlContent(GITHUB_BASE + "invincible.txt" + t);
-            if (i) cloudInvincibles = i.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
-
-            let tg = FileLib.getUrlContent(GITHUB_BASE + "target.txt" + t);
-            if (tg) cloudTargets = tg.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
-
-            let b = FileLib.getUrlContent(GITHUB_BASE + "blacklist.txt" + t);
-            if (b) cloudBlacklist = b.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
-
-            let obj = FileLib.getUrlContent(GITHUB_BASE + "objective.txt" + t);
-            if (obj) cloudObjective = obj.replace(/\r/g, "").trim();
-
-            let m = FileLib.getUrlContent(GITHUB_BASE + "motd.txt" + t);
-            if (m) {
-                m = m.replace(/\r/g, "").trim();
-                if (m.length > 0 && m !== cloudMotd) {
-                    cloudMotd = m;
-                    if (!verbose) { // Ne pas spam le son si on force l'update
-                        ChatLib.chat("§6§m---------------------------------------------");
-                        ChatLib.chat("§e§lAnnonce Oblivion : §f" + cloudMotd);
-                        ChatLib.chat("§6§m---------------------------------------------");
-                        World.playSound("random.levelup", 1, 1);
-                    }
-                }
-            }
-
-            // GESTION BLINDÉE DU JSON LÉGENDAIRE
+            // 1. CHARGEMENT DU JSON LÉGENDAIRE (La partie importante)
             let jsonRaw = FileLib.getUrlContent(GITHUB_BASE + "legendary_chars.json" + t);
+            
             if (jsonRaw) {
-                // On extrait UNIQUEMENT ce qui est entre { et } pour éviter les caractères invisibles qui font crash Nashorn
-                let startIdx = jsonRaw.indexOf("{");
-                let endIdx = jsonRaw.lastIndexOf("}");
-                
-                if (startIdx !== -1 && endIdx !== -1) {
-                    let cleanJson = jsonRaw.substring(startIdx, endIdx + 1);
-                    let parsed = JSON.parse(cleanJson);
+                // Nettoyage brutal du JSON pour éviter les erreurs de format
+                jsonRaw = jsonRaw.trim(); 
+                try {
+                    let parsed = JSON.parse(jsonRaw);
                     if (parsed && parsed.admins) {
                         cloudLegendaries = parsed.admins;
-                        if (verbose) ChatLib.chat(prefix + "§aSuccès : " + cloudLegendaries.length + " Légendes chargées !");
+                        if (verbose) ChatLib.chat(prefix + "§aJSON Chargé ! " + cloudLegendaries.length + " Légendes trouvées.");
+                    } else {
+                        if (verbose) ChatLib.chat(prefix + "§cErreur JSON: Pas de liste 'admins' trouvée.");
                     }
-                } else if (verbose) {
-                    ChatLib.chat(prefix + "§cErreur : Le fichier JSON n'a pas le bon format.");
+                } catch (e) {
+                    if (verbose) ChatLib.chat(prefix + "§cErreur de lecture JSON (Syntaxe invalide). Vérifie les virgules !");
                 }
-            } else if (verbose) {
-                ChatLib.chat(prefix + "§cErreur : Fichier JSON introuvable sur Github.");
+            } else {
+                if (verbose) ChatLib.chat(prefix + "§cImpossible de télécharger le JSON (404 ou Pas d'internet).");
+            }
+
+            // 2. Autres fichiers (Listes simples)
+            let f = FileLib.getUrlContent(GITHUB_BASE + "default_friend.txt" + t);
+            if (f) cloudFriends = f.split("\n").map(s => s.trim()).filter(s => s.length >= 3);
+
+            let i = FileLib.getUrlContent(GITHUB_BASE + "invincible.txt" + t);
+            if (i) cloudInvincibles = i.split("\n").map(s => s.trim()).filter(s => s.length >= 3);
+
+            let tg = FileLib.getUrlContent(GITHUB_BASE + "target.txt" + t);
+            if (tg) cloudTargets = tg.split("\n").map(s => s.trim()).filter(s => s.length >= 3);
+
+            let b = FileLib.getUrlContent(GITHUB_BASE + "blacklist.txt" + t);
+            if (b) cloudBlacklist = b.split("\n").map(s => s.trim()).filter(s => s.length >= 3);
+
+            let obj = FileLib.getUrlContent(GITHUB_BASE + "objective.txt" + t);
+            cloudObjective = obj ? obj.trim() : "";
+
+            let m = FileLib.getUrlContent(GITHUB_BASE + "motd.txt" + t);
+            if (m && m.trim().length > 0 && m.trim() !== cloudMotd) {
+                cloudMotd = m.trim();
+                if (!verbose) {
+                    ChatLib.chat("§6§m---------------------------------------------");
+                    ChatLib.chat("§e§lAnnonce Oblivion : §f" + cloudMotd);
+                    ChatLib.chat("§6§m---------------------------------------------");
+                    World.playSound("random.levelup", 1, 1);
+                }
             }
 
             lastUpdate = Date.now();
-            if (verbose) ChatLib.chat(prefix + "§aMise à jour Cloud terminée !");
-            
-        } catch(e) {
-            if (verbose) ChatLib.chat(prefix + "§cErreur critique lors de la synchro : " + e.toString());
+            if (verbose) ChatLib.chat(prefix + "§aTout est à jour !");
+
+        } catch (e) {
+            if (verbose) ChatLib.chat(prefix + "§cCrash update: " + e);
         }
         isUpdating = false;
     }).start();
 }
 
-// Boucle toutes les 10s
+// Auto-Update toutes les 15s
 register("step", () => {
-    if (Date.now() - lastUpdate > 10000) fetchCloudData(false);
+    if (Date.now() - lastUpdate > 15000) fetchCloudData(false);
 }).setFps(1);
 
-// Hiérarchie Absolue des joueurs (Sécurisée avec .trim())
+// --- 2. FONCTIONS DE VÉRIFICATION ---
 function getStatus(name) {
     if (!name) return "NONE";
     let lower = ChatLib.removeFormatting(name).toLowerCase().trim();
-    
-    // Pour parcourir les arrays d'objets proprement en 1.8.9
-    for (let i = 0; i < cloudLegendaries.length; i++) {
-        if (cloudLegendaries[i].pseudo.toLowerCase().trim() === lower) return "LEGENDARY";
+
+    // Check Légendaires (JSON)
+    for (let k = 0; k < cloudLegendaries.length; k++) {
+        if (cloudLegendaries[k].pseudo.toLowerCase() === lower) return "LEGENDARY";
     }
 
     if (cloudInvincibles.some(i => i.toLowerCase() === lower)) return "INVINCIBLE";
     if (cloudTargets.some(t => t.toLowerCase() === lower)) return "TARGET";
     if (data.friends.some(f => f.toLowerCase() === lower) || cloudFriends.some(f => f.toLowerCase() === lower)) return "FRIEND";
+    
     return "NONE";
 }
 
-function getLegendaryData(name) {
+function getLegendaryRole(name) {
     let lower = ChatLib.removeFormatting(name).toLowerCase().trim();
-    for (let i = 0; i < cloudLegendaries.length; i++) {
-        if (cloudLegendaries[i].pseudo.toLowerCase().trim() === lower) return cloudLegendaries[i];
+    for (let k = 0; k < cloudLegendaries.length; k++) {
+        if (cloudLegendaries[k].pseudo.toLowerCase() === lower) {
+            return cloudLegendaries[k].role;
+        }
     }
-    return null;
+    return "Dieu";
 }
 
-// --- 2. COMMANDES ---
+// --- 3. COMMANDES ---
 register("command", (...args) => {
     if (!args || args.length === 0) {
         ChatLib.chat("§2§m---------------------------------------------");
-        ChatLib.chat("§2§lOblivion Manager §7(v" + VERSION + ")");
-        ChatLib.chat("§a/lf add/remove <pseudo> §7- Gérer un ami local");
-        ChatLib.chat("§a/lf list                §7- Voir toutes les listes");
-        ChatLib.chat("§a/lf toggle <option>     §7- pvp | radar | esp | alert");
-        ChatLib.chat("§a/lf force               §7- §eForcer la Synchro (Debug)");
-        ChatLib.chat("§a/friendpvp              §7- Bloque/Débloque les coups");
+        ChatLib.chat("§2§lOblivion Manager §7(v6.0)");
+        ChatLib.chat("§a/lf add <pseudo>    §7- Ajouter ami");
+        ChatLib.chat("§a/lf remove <pseudo> §7- Retirer ami");
+        ChatLib.chat("§a/lf list            §7- Voir listes");
+        ChatLib.chat("§a/lf force           §7- §eForcer Synchro (Debug)");
+        ChatLib.chat("§a/friendpvp          §7- Toggle PvP");
         ChatLib.chat("§2§m---------------------------------------------");
         return;
     }
+    let act = args[0].toLowerCase();
     
-    let action = args[0].toLowerCase();
-    let pseudo = args[1];
-
-    if (action === "add" && pseudo) {
-        if (!data.friends.includes(pseudo)) { data.friends.push(pseudo); data.save(); ChatLib.chat(prefix + "§a" + pseudo + " ajouté !"); World.playSound("random.orb", 1, 1); }
-    } 
-    else if (action === "remove" && pseudo) {
-        data.friends = data.friends.filter(f => f.toLowerCase() !== pseudo.toLowerCase()); data.save(); ChatLib.chat(prefix + "§c" + pseudo + " retiré."); World.playSound("random.break", 1, 1);
-    } 
-    else if (action === "list") {
-        ChatLib.chat("§2Amis Locaux: §f" + (data.friends.length > 0 ? data.friends.join(", ") : "Aucun"));
-        ChatLib.chat("§6Serveur Cloud:");
-        ChatLib.chat(" §c☠ Dieux Légendaires: §f" + cloudLegendaries.length);
-        ChatLib.chat(" §a- Amis: §f" + cloudFriends.length);
-        ChatLib.chat(" §d- Invincibles: §f" + cloudInvincibles.length);
-        ChatLib.chat(" §c- Cibles: §f" + cloudTargets.length);
-        ChatLib.chat(" §8- Blacklist: §f" + cloudBlacklist.length);
-    } 
-    else if (action === "toggle" && pseudo) {
-        let opt = pseudo.toLowerCase();
-        if (opt === "pvp") { data.pvpEnabled = !data.pvpEnabled; ChatLib.chat(prefix + "PvP: " + data.pvpEnabled); }
-        else if (opt === "radar") { data.radar = !data.radar; ChatLib.chat(prefix + "Radar: " + data.radar); }
-        else if (opt === "esp") { data.esp3D = !data.esp3D; ChatLib.chat(prefix + "ESP: " + data.esp3D); }
-        else if (opt === "alert") { data.proximityAlert = !data.proximityAlert; ChatLib.chat(prefix + "Alerte: " + data.proximityAlert); }
-        data.save();
-    }
-    else if (action === "force") {
-        ChatLib.chat(prefix + "§eTéléchargement forcé des données Cloud...");
+    if (act === "force") {
+        ChatLib.chat(prefix + "§eForçage de la mise à jour Cloud...");
         fetchCloudData(true);
+    } 
+    else if (act === "list") {
+        ChatLib.chat("§6Cloud Stats:");
+        ChatLib.chat(" §cDieux (JSON): " + cloudLegendaries.length);
+        if (cloudLegendaries.length > 0) ChatLib.chat(" §7-> " + cloudLegendaries[0].pseudo + "...");
+        ChatLib.chat(" §aAmis: " + cloudFriends.length);
+        ChatLib.chat(" §dInvincibles: " + cloudInvincibles.length);
+        ChatLib.chat(" §cTargets: " + cloudTargets.length);
+    }
+    else if (act === "add" && args[1]) {
+        if (!data.friends.includes(args[1])) {
+            data.friends.push(args[1]); data.save();
+            ChatLib.chat(prefix + "§a" + args[1] + " ajouté.");
+        }
+    }
+    else if (act === "remove" && args[1]) {
+        data.friends = data.friends.filter(f => f.toLowerCase() !== args[1].toLowerCase());
+        data.save();
+        ChatLib.chat(prefix + "§c" + args[1] + " retiré.");
     }
 }).setName("localfriend").setAliases("lf");
 
 register("command", () => {
     data.pvpEnabled = !data.pvpEnabled; data.save();
-    ChatLib.chat(prefix + (data.pvpEnabled ? "§cPvP Ami ACTIVÉ" : "§aPvP Ami DÉSACTIVÉ"));
+    ChatLib.chat(prefix + "PvP Ami: " + (data.pvpEnabled ? "§cON" : "§aOFF"));
 }).setName("friendpvp");
 
-// --- 3. GESTION DES POUVOIRS ET DU PVP ---
+// --- 4. GESTION DES POUVOIRS (FREEZE & ANTI-HIT) ---
 register("tick", () => {
     if (!World.isLoaded()) return;
-    let currentHp = Player.getHP();
     
-    // Si on perd de la vie (détection dégât)
-    if (currentHp < hpCache && currentHp > 0) {
-        let hitByGod = false;
+    // 1. Détection Paralysie (Quand on prend un coup)
+    let hp = Player.getHP();
+    if (hp < hpCache && hp > 0) {
+        let godNearby = false;
         World.getAllPlayers().forEach(p => {
             if (p.getName() !== Player.getName() && getStatus(p.getName()) === "LEGENDARY") {
-                // Si un dieu est à moins de 8 blocs quand on prend un coup, c'est lui.
-                if (Player.asPlayerMP().distanceTo(p) < 8) hitByGod = true;
+                if (Player.asPlayerMP().distanceTo(p) < 6) godNearby = true;
             }
         });
-        
-        if (hitByGod && !isParalyzed) {
+
+        if (godNearby && !isParalyzed) {
             isParalyzed = true;
-            World.playSound("ambient.weather.thunder", 100, 0.5); 
-            Client.showTitle("§4§lPARALYSÉ", "§cUn Dieu t'a frappé...", 0, 80, 20);
+            paralysisTimer = 100; // 5 secondes de freeze renouvelables
+            World.playSound("ambient.weather.thunder", 100, 0.5);
+            Client.showTitle("§4§lPARALYSÉ", "§cUn Dieu t'a touché !", 0, 40, 10);
         }
     }
-    hpCache = currentHp;
+    hpCache = hp;
 
+    // 2. Application du Freeze
     if (isParalyzed) {
-        if (Player.getHP() <= 0 || Player.asPlayerMP().isDead()) {
-            isParalyzed = false; 
-        } else {
+        if (paralysisTimer > 0 && Player.getHP() > 0) {
+            paralysisTimer--;
             let p = Player.getPlayer();
-            p.field_70159_w = 0; 
-            p.field_70179_y = 0; 
-            if (p.field_70181_x > 0) p.field_70181_x = 0; 
-            Client.getMinecraft().field_71439_g.field_70702_br = 0; 
-            Client.getMinecraft().field_71439_g.field_70701_bs = 0; 
+            p.field_70159_w = 0; // MotionX
+            p.field_70179_y = 0; // MotionZ
+            if (p.field_70181_x > 0) p.field_70181_x = 0; // Jump
+            actionBarMsg = "§4§lTu es gelé par la puissance divine...";
+            actionBarTimer = 5;
+        } else {
+            isParalyzed = false;
         }
     }
 });
 
+// 3. Protection quand ON tape
 register("attackEntity", (entity, event) => {
-    let name = ChatLib.removeFormatting(entity.getName()).trim();
+    let name = ChatLib.removeFormatting(entity.getName());
     let st = getStatus(name);
 
     if (st === "LEGENDARY") {
         cancel(event);
-        World.playSound("mob.wither.spawn", 100, 1);
-        Player.getPlayer().field_70125_A = 90; 
-        Player.getPlayer().field_70177_z += 180;
-        actionBarMsg = "§4§l☠ TU NE PEUX PAS DÉFIER UN DIEU ☠";
-        actionBarTimer = 60;
-        return;
-    }
-
-    if (st === "INVINCIBLE") {
+        World.playSound("mob.wither.idle", 100, 0.5);
+        Player.getPlayer().field_70125_A = 90; // Regarde le sol
+        Player.getPlayer().field_70177_z += 180; // Tourne le dos
+        actionBarMsg = "§4§l☠ IL EST INTUABLE ☠"; actionBarTimer = 40;
+    } 
+    else if (st === "INVINCIBLE") {
         cancel(event);
         World.playSound("mob.enderdragon.hit", 100, 0.5);
-        actionBarMsg = "§4§l🛡 JOUEUR INVINCIBLE 🛡"; actionBarTimer = 40;
-    } else if (st === "FRIEND" && !data.pvpEnabled) {
+        actionBarMsg = "§c§l🛡 PROTECTION OBLIVION 🛡"; actionBarTimer = 40;
+    }
+    else if (st === "FRIEND" && !data.pvpEnabled) {
         cancel(event);
         World.playSound("random.anvil_land", 100, 0.5);
-        actionBarMsg = "§c§l❌ NE TAPE PAS TON AMI ❌"; actionBarTimer = 40;
+        actionBarMsg = "§a§l✔ C'est un ami !"; actionBarTimer = 40;
     }
 });
 
-// --- 4. VISUELS (RADAR, ESP, AURA) ---
+// --- 5. VISUELS (TAB, ESP, RADAR) ---
 register("renderOverlay", () => {
-    let w = Renderer.screen.getWidth();
-    let h = Renderer.screen.getHeight();
-
-    let godNearby = false;
-    World.getAllPlayers().forEach(p => {
-        if (p.getName() !== Player.getName() && getStatus(p.getName()) === "LEGENDARY" && Player.asPlayerMP().distanceTo(p) < 20) {
-            godNearby = true;
-        }
-    });
-
-    if (godNearby) {
-        let opacity = Math.abs(Math.sin(Date.now() / 400)) * 60;
-        Renderer.drawRect(Renderer.color(200, 0, 0, opacity), 0, 0, w, h);
-        Renderer.drawStringWithShadow("§4§l☠ UNE PRÉSENCE DIVINE EST PROCHE ☠", w/2 - 110, 25);
-    }
-
-    if (isParalyzed) {
-        Renderer.drawRect(Renderer.color(50, 0, 0, 120), 0, 0, w, h);
-        Renderer.drawStringWithShadow("§4§l[!] CORPS PARALYSÉ [!]", w/2 - 65, h/2 + 30);
-    }
-
-    if (cloudObjective.length > 0) Renderer.drawStringWithShadow("§6§l📌 Objectif : §e" + cloudObjective, 5, 5);
-
     if (actionBarTimer > 0) {
-        Renderer.drawStringWithShadow(actionBarMsg, (w/2) - (Renderer.getStringWidth(actionBarMsg)/2), h - 60);
+        let w = Renderer.screen.getWidth();
+        Renderer.drawStringWithShadow(actionBarMsg, w/2 - Renderer.getStringWidth(actionBarMsg)/2, Renderer.screen.getHeight() - 70);
         actionBarTimer--;
     }
-
-    if (!data.radar) return;
-    let rx = 70, ry = 70, s = 50;
-    if (cloudObjective.length > 0) ry += 15; 
+    if (isParalyzed) {
+        Renderer.drawRect(Renderer.color(50, 0, 0, 80), 0, 0, Renderer.screen.getWidth(), Renderer.screen.getHeight());
+    }
     
-    Renderer.drawRect(Renderer.color(0, 0, 0, 150), rx - s, ry - s, s * 2, s * 2);
-    Renderer.drawRect(Renderer.color(255, 255, 255, 255), rx - 1, ry - 1, 2, 2);
-
-    let yaw = Player.getYaw();
+    // Alerte Proximité Dieu
+    let w = Renderer.screen.getWidth();
+    let godNear = false;
     World.getAllPlayers().forEach(p => {
-        let name = ChatLib.removeFormatting(p.getName());
-        if (name === Player.getName()) return;
-        
-        let st = getStatus(name);
-        if (st === "NONE") return;
-
-        let dx = p.getX() - Player.getX(); let dz = p.getZ() - Player.getZ();
-        let cos = Math.cos(yaw * (Math.PI / 180)); let sin = Math.sin(yaw * (Math.PI / 180));
-        let rotX = -(dx * cos - dz * sin); let rotY = -(dx * sin + dz * cos);
-        let drawX = rotX * 1.5; let drawY = rotY * 1.5;
-        
-        if (Math.sqrt(drawX*drawX + drawY*drawY) < s) {
-            let isBlinking = (Date.now() % 600 < 300);
-            let color = Renderer.color(0, 255, 0); 
-            if (st === "INVINCIBLE") color = Renderer.color(180, 0, 255);
-            if (st === "LEGENDARY") color = isBlinking ? Renderer.color(0, 0, 0) : Renderer.color(255, 0, 0); 
-            if (st === "TARGET") color = isBlinking ? Renderer.color(255, 0, 0) : Renderer.color(0, 0, 0, 0);
-
-            if (st !== "TARGET" || isBlinking) {
-                Renderer.drawRect(color, rx + drawX - 1.5, ry + drawY - 1.5, 3, 3);
-            }
-        }
+        if(getStatus(p.getName()) === "LEGENDARY" && Player.asPlayerMP().distanceTo(p) < 25) godNear = true;
     });
-    Renderer.drawStringWithShadow("§7Radar Oblivion", rx - 35, ry + s + 2);
+    if(godNear) {
+        let opacity = Math.abs(Math.sin(Date.now() / 300)) * 100;
+        Renderer.drawRect(Renderer.color(255, 0, 0, opacity), 0, 0, w, Renderer.screen.getHeight());
+        Renderer.drawStringWithShadow("§4§l⚠ PRÉSENCE DIVINE ⚠", w/2 - 60, 50);
+    }
 });
 
 register("renderWorld", () => {
@@ -333,91 +272,48 @@ register("renderWorld", () => {
         let name = ChatLib.removeFormatting(p.getName());
         if (name === Player.getName()) return;
         let st = getStatus(name);
-        if (st === "NONE") return;
-
-        if (Player.asPlayerMP().distanceTo(p) < 60) {
-            let txt = "§a★ AMI ★";
+        
+        if (st !== "NONE" && Player.asPlayerMP().distanceTo(p) < 60) {
+            let txt = "§aAmi";
             let scale = 0.03;
-            let offset = 0.5;
+            let h = 0.5;
 
-            if (st === "TARGET") txt = "§c§l⚠ TARGET ⚠";
+            if (st === "TARGET") txt = "§c⚠ CIBLE ⚠";
             else if (st === "INVINCIBLE") txt = "§d§l🛡 GOD 🛡";
             else if (st === "LEGENDARY") {
-                let legData = getLegendaryData(name);
-                let role = legData ? legData.role : "Dieu Inconnu";
-                txt = "§4§l☠ LÉGENDE ☠\n§c§o" + role;
-                offset = 0.8;
+                let role = getLegendaryRole(name);
+                txt = "§4§l☠ " + role + " ☠";
+                scale = 0.04; // Plus gros
+                h = 0.8;
             }
-            Tessellator.drawString(txt, p.getRenderX(), p.getRenderY() + p.getHeight() + offset, p.getRenderZ(), 0, true, scale, false);
+            Tessellator.drawString(txt, p.getRenderX(), p.getRenderY() + p.getHeight() + h, p.getRenderZ(), 0, true, scale, false);
         }
     });
 });
 
-// --- 5. TABLIST & MUTE GLOBAL ---
 register("tick", () => {
     if (!World.isLoaded()) return;
     try {
         let sb = World.getWorld().func_96441_U();
+        let tLeg = sb.func_96508_e("00_LEG") || sb.func_96527_f("00_LEG"); tLeg.func_96666_b("§4§lDieu §c");
+        let tGod = sb.func_96508_e("01_GOD") || sb.func_96527_f("01_GOD"); tGod.func_96666_b("§d§lGod §d");
+        let tFri = sb.func_96508_e("02_FRI") || sb.func_96527_f("02_FRI"); tFri.func_96666_b("§a§lFriend §a");
+        let tTar = sb.func_96508_e("03_TAR") || sb.func_96527_f("03_TAR"); tTar.func_96666_b("§c§lTarget §c");
+
+        let nh = Client.getMinecraft().func_147114_u();
+        let it = nh.func_175106_d().iterator();
         
-        let tLeg = sb.func_96508_e("0_LEG") || sb.func_96527_f("0_LEG"); tLeg.func_96666_b("§4§k|§r §c§lDieu §4§k|§r §c");
-        let tGod = sb.func_96508_e("1_GOD") || sb.func_96527_f("1_GOD"); tGod.func_96666_b("§d§lGod §r§d");
-        let tFriend = sb.func_96508_e("2_FRIEND") || sb.func_96527_f("2_FRIEND"); tFriend.func_96666_b("§a§lFriend §r§a");
-        let tTarget = sb.func_96508_e("3_TARGET") || sb.func_96527_f("3_TARGET"); tTarget.func_96666_b("§c§lTarget §r§c");
-
-        let netHandler = Client.getMinecraft().func_147114_u();
-        let iterator = netHandler.func_175106_d().iterator();
-        let ChatComponentText = Java.type("net.minecraft.util.ChatComponentText");
-
-        while (iterator.hasNext()) {
-            let info = iterator.next();
+        while(it.hasNext()) {
+            let info = it.next();
             let name = info.func_178845_a().getName();
             let st = getStatus(name);
             
             if (st !== "NONE") {
-                let teamName = "2_FRIEND"; let teamObj = tFriend; let colorPrefix = "§a";
-                if (st === "LEGENDARY") { teamName = "0_LEG"; teamObj = tLeg; colorPrefix = "§c"; }
-                else if (st === "INVINCIBLE") { teamName = "1_GOD"; teamObj = tGod; colorPrefix = "§d"; }
-                else if (st === "TARGET") { teamName = "3_TARGET"; teamObj = tTarget; colorPrefix = "§c"; }
-
-                if (!teamObj.func_96665_g().contains(name)) sb.func_151392_a(name, teamName);
+                let team = st==="LEGENDARY"?tLeg : st==="INVINCIBLE"?tGod : st==="TARGET"?tTar : tFri;
+                let tName = st==="LEGENDARY"?"00_LEG" : st==="INVINCIBLE"?"01_GOD" : st==="TARGET"?"03_TAR" : "02_FRI";
                 
-                let dName = info.func_178854_k();
-                if (dName == null || dName.func_150254_d().indexOf(colorPrefix) == -1) {
-                     info.func_178859_a(new ChatComponentText(colorPrefix + name));
-                }
+                if (!team.func_96665_g().contains(name)) sb.func_151392_a(name, tName);
             }
         }
     } catch(e) {}
-});
-
-register("chat", (event) => {
-    let msg = ChatLib.getChatMessage(event);
-    let clean = ChatLib.removeFormatting(msg);
-
-    for (let badGuy of cloudBlacklist) {
-        if (clean.toLowerCase().includes(badGuy.toLowerCase())) {
-            if (clean.toLowerCase().indexOf(badGuy.toLowerCase()) < 15) {
-                cancel(event);
-                return;
-            }
-        }
-    }
-
-    if (!data.chatHighlight) return;
-    let all =[...data.friends, ...cloudFriends, ...cloudInvincibles, ...cloudTargets];
-    for (let i = 0; i < cloudLegendaries.length; i++) all.push(cloudLegendaries[i].pseudo);
-    
-    all.forEach(f => {
-        if (clean.indexOf(f + ":") != -1 || clean.indexOf(f + ">") != -1) {
-            cancel(event);
-            let st = getStatus(f);
-            let color = "§a§l";
-            if (st === "TARGET") color = "§c§l";
-            else if (st === "INVINCIBLE") color = "§d§l";
-            else if (st === "LEGENDARY") color = "§4§l☠ "; 
-
-            ChatLib.chat(msg.replace(f, color + f + "§r"));
-            if (st !== "TARGET") World.playSound("note.pling", 1, 2);
-        }
-    });
 });
