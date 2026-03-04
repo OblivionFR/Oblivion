@@ -1,7 +1,7 @@
 AngmarRoiSorcier
-Solus
 Stacia
-Terraria
+Solus
 Vecta
 Lunaria
+Terraria
 Cardinal
