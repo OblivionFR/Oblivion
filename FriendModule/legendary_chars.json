@@ -1,0 +1,34 @@
+{
+  "admins": [
+    {
+      "pseudo": "Solunaryx",
+      "password": "Solunaryx#Radiant91!CoreX",
+      "role": "Gardien de la lumière éternelle"
+    },
+    {
+      "pseudo": "Stacivora",
+      "password": "Stacivora!Aether74#PrimeY",
+      "role": "Protectrice de l’équilibre"
+    },
+    {
+      "pseudo": "Veytoris",
+      "password": "Veytoris$Abyss66!VoidZ",
+      "role": "Maître des ombres"
+    },
+    {
+      "pseudo": "Lunaryos",
+      "password": "Lunaryos%Eclipse28!NyT",
+      "role": "Messagère de la nuit"
+    },
+    {
+      "pseudo": "Terravion",
+      "password": "Terravion&Gaia53!StoneQ",
+      "role": "Protecteur des royaumes souterrains"
+    },
+    {
+      "pseudo": "Cardyron",
+      "password": "Cardyron!System99#RtF",
+      "role": "Stratège divin"
+    }
+  ]
+}
