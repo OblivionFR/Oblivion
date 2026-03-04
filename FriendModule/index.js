@@ -1,7 +1,7 @@
 import PogObject from "PogData";
 
 // --- SYSTEME DE MISE A JOUR AUTOMATIQUE ---
-const VERSION = "4.0"; // Change ça sur ton GitHub pour forcer les joueurs à se mettre à jour !
+const VERSION = "5.0"; // Change ça sur ton GitHub pour forcer les joueurs à se mettre à jour !
 const GITHUB_URL_CODE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/FriendModule/index.js";
 
 function checkUpdate() {
