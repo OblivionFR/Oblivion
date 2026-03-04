@@ -4,3 +4,4 @@ Stacia
 Terraria
 Vecta
 Lunaria
+Cardinal
