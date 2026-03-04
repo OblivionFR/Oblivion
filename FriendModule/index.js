@@ -1,7 +1,7 @@
 import PogObject from "PogData";
 
 // --- SYSTEME DE MISE A JOUR AUTOMATIQUE ---
-const VERSION = "4.5"; // À changer sur Github lors des prochaines MAJ
+const VERSION = "5.0"; 
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/FriendModule/";
 
 function checkUpdate() {
@@ -20,7 +20,7 @@ function checkUpdate() {
 }
 checkUpdate();
 
-// --- CONFIGURATION ---
+// --- CONFIGURATION LOCALE ---
 const prefix = "§2[Oblivion] ";
 const data = new PogObject("GreenFriends", {
     friends:[],
@@ -28,15 +28,16 @@ const data = new PogObject("GreenFriends", {
     chatHighlight: true,
     esp3D: true,
     radar: true,
-    proximityAlert: true,
-    targetEsp: true // NOUVEAU: Encadre les ennemis en rouge
+    proximityAlert: true
 }, "data.json");
 
 // --- DONNÉES CLOUD ---
-let cloudFriends = [];
+let cloudFriends =[];
 let cloudInvincibles = [];
-let cloudTargets =[];
+let cloudTargets = [];
+let cloudBlacklist =[]; // NOUVEAU: Mute global
 let cloudMotd = "";
+let cloudObjective = ""; // NOUVEAU: Objectif affiché à l'écran
 
 let lastUpdate = 0;
 let isUpdating = false;
@@ -45,24 +46,36 @@ let actionBarMsg = "";
 let actionBarTimer = 0;
 let alertedTargets =[];
 
-// --- 1. SYSTÈME DE SYNCHRONISATION (10s) ---
+// --- 1. SYSTÈME DE SYNCHRONISATION CLOUD (10s) ---
 register("step", () => {
     if (Date.now() - lastUpdate > 10000 && !isUpdating) {
         isUpdating = true;
         new Thread(() => {
             try {
-                let t = "?t=" + Date.now();
+                let t = "?t=" + Date.now(); // Anti-cache
                 
-                // On récupère et on FILTRE STRICTEMENT (>= 3 lettres) pour éviter les joueurs fantômes
+                // Amis
                 let f = FileLib.getUrlContent(GITHUB_BASE + "default_friend.txt" + t);
                 if (f) cloudFriends = f.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
 
+                // Invincibles
                 let i = FileLib.getUrlContent(GITHUB_BASE + "invincible.txt" + t);
                 if (i) cloudInvincibles = i.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
 
+                // Targets
                 let tg = FileLib.getUrlContent(GITHUB_BASE + "target.txt" + t);
                 if (tg) cloudTargets = tg.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
 
+                // Blacklist (Mute global)
+                let b = FileLib.getUrlContent(GITHUB_BASE + "blacklist.txt" + t);
+                if (b) cloudBlacklist = b.split("\n").map(s => s.replace(/\r/g, "").trim()).filter(s => s.length >= 3);
+
+                // Objectif en haut de l'écran
+                let obj = FileLib.getUrlContent(GITHUB_BASE + "objective.txt" + t);
+                if (obj) cloudObjective = obj.replace(/\r/g, "").trim();
+                else cloudObjective = "";
+
+                // MOTD (Message of the day)
                 let m = FileLib.getUrlContent(GITHUB_BASE + "motd.txt" + t);
                 if (m) {
                     m = m.replace(/\r/g, "").trim();
@@ -81,19 +94,18 @@ register("step", () => {
     }
 }).setFps(1);
 
-// Fonction de vérification de grade
+// Hiérarchie des joueurs
 function getStatus(name) {
     if (!name) return "NONE";
     let lower = ChatLib.removeFormatting(name).toLowerCase();
     
-    // Priorité absolue : Invincibles > Targets > Friends
     if (cloudInvincibles.some(i => i.toLowerCase() === lower)) return "INVINCIBLE";
     if (cloudTargets.some(t => t.toLowerCase() === lower)) return "TARGET";
     if (data.friends.some(f => f.toLowerCase() === lower) || cloudFriends.some(f => f.toLowerCase() === lower)) return "FRIEND";
     return "NONE";
 }
 
-// --- 2. COMMANDES (FINI LE GUI !) ---
+// --- 2. COMMANDES ---
 register("command", (...args) => {
     if (!args || args.length === 0) {
         ChatLib.chat("§2§m---------------------------------------------");
@@ -115,13 +127,10 @@ register("command", (...args) => {
             data.friends.push(pseudo); data.save();
             ChatLib.chat(prefix + "§a" + pseudo + " ajouté !");
             World.playSound("random.orb", 1, 1);
-        } else {
-            ChatLib.chat(prefix + "§cDéjà dans la liste.");
-        }
+        } else { ChatLib.chat(prefix + "§cDéjà dans la liste."); }
     } 
     else if (action === "remove" && pseudo) {
-        data.friends = data.friends.filter(f => f.toLowerCase() !== pseudo.toLowerCase());
-        data.save();
+        data.friends = data.friends.filter(f => f.toLowerCase() !== pseudo.toLowerCase()); data.save();
         ChatLib.chat(prefix + "§c" + pseudo + " retiré.");
         World.playSound("random.break", 1, 1);
     } 
@@ -131,6 +140,7 @@ register("command", (...args) => {
         ChatLib.chat(" §a- Amis: §f" + cloudFriends.length);
         ChatLib.chat(" §d- Invincibles (GOD): §f" + cloudInvincibles.length);
         ChatLib.chat(" §c- Cibles (Targets): §f" + cloudTargets.length);
+        ChatLib.chat(" §8- Blacklistés (Mute): §f" + cloudBlacklist.length);
     } 
     else if (action === "toggle" && pseudo) {
         let opt = pseudo.toLowerCase();
@@ -143,10 +153,8 @@ register("command", (...args) => {
     }
 }).setName("localfriend").setAliases("lf");
 
-// Retour du /friendpvp officiel
 register("command", () => {
-    data.pvpEnabled = !data.pvpEnabled;
-    data.save();
+    data.pvpEnabled = !data.pvpEnabled; data.save();
     ChatLib.chat(prefix + (data.pvpEnabled ? "§cPvP Ami ACTIVÉ §7(Danger)" : "§aPvP Ami DÉSACTIVÉ §7(Sécurisé)"));
 }).setName("friendpvp");
 
@@ -168,17 +176,28 @@ register("attackEntity", (entity, event) => {
     }
 });
 
-// --- 4. VISUELS (RADAR, ESP, ALERTE PROXIMITÉ) ---
+// --- 4. VISUELS (RADAR, ESP SANS CRASH, ACTION BAR, OBJECTIF) ---
 register("renderOverlay", () => {
+    let w = Renderer.screen.getWidth();
+    let h = Renderer.screen.getHeight();
+
+    // NOUVEAU : Affichage de l'objectif Cloud
+    if (cloudObjective.length > 0) {
+        Renderer.drawStringWithShadow("§6§l📌 Objectif Oblivion : §e" + cloudObjective, 5, 5);
+    }
+
     // Action Bar
     if (actionBarTimer > 0) {
-        Renderer.drawStringWithShadow(actionBarMsg, (Renderer.screen.getWidth()/2) - (Renderer.getStringWidth(actionBarMsg)/2), Renderer.screen.getHeight() - 60);
+        Renderer.drawStringWithShadow(actionBarMsg, (w/2) - (Renderer.getStringWidth(actionBarMsg)/2), h - 60);
         actionBarTimer--;
     }
 
     // Radar 2D
     if (!data.radar) return;
     let rx = 70, ry = 70, s = 50;
+    // Si l'objectif est là, on descend le radar pour pas superposer
+    if (cloudObjective.length > 0) ry += 15; 
+    
     Renderer.drawRect(Renderer.color(0, 0, 0, 150), rx - s, ry - s, s * 2, s * 2);
     Renderer.drawRect(Renderer.color(255, 255, 255, 255), rx - 1, ry - 1, 2, 2);
 
@@ -204,7 +223,7 @@ register("renderOverlay", () => {
         
         if (Math.sqrt(drawX*drawX + drawY*drawY) < s) {
             let isBlinking = (Date.now() % 600 < 300);
-            let color = Renderer.color(0, 255, 0);
+            let color = Renderer.color(0, 255, 0); // Vert par défaut
             if (st === "INVINCIBLE") color = Renderer.color(180, 0, 255);
             if (st === "TARGET") color = isBlinking ? Renderer.color(255, 0, 0) : Renderer.color(0, 0, 0, 0);
 
@@ -213,10 +232,10 @@ register("renderOverlay", () => {
             }
         }
     });
-    Renderer.drawStringWithShadow("§7Radar Oblivion", rx - 35, ry + s + 2);
+    Renderer.drawStringWithShadow("§7Radar", rx - 15, ry + s + 2);
 });
 
-// Alerte Proximité
+// Alerte Proximité Ennemis
 register("step", () => {
     if (!data.proximityAlert) return;
     World.getAllPlayers().forEach(p => {
@@ -224,7 +243,7 @@ register("step", () => {
         if (getStatus(name) === "TARGET") {
             let dist = Player.asPlayerMP().distanceTo(p);
             if (dist < 15 && !alertedTargets.includes(name)) {
-                Client.showTitle("§c§l⚠ ENNEMI PROCHE ⚠", "§f" + name + " est à " + Math.round(dist) + "m !", 0, 40, 10);
+                Client.showTitle("§c§l⚠ TARGET PROCHE ⚠", "§f" + name + " est à " + Math.round(dist) + "m !", 0, 40, 10);
                 World.playSound("note.bass", 1, 0.5);
                 alertedTargets.push(name);
             } else if (dist >= 20 && alertedTargets.includes(name)) {
@@ -234,8 +253,9 @@ register("step", () => {
     });
 }).setFps(2);
 
-// ESP 3D & HITBOX POUR LES TARGETS
+// ESP 3D (Seulement du TEXTE pour ne plus jamais faire crash)
 register("renderWorld", () => {
+    if (!data.esp3D) return;
     World.getAllPlayers().forEach(p => {
         let name = ChatLib.removeFormatting(p.getName());
         if (name === Player.getName()) return;
@@ -243,23 +263,16 @@ register("renderWorld", () => {
         let st = getStatus(name);
         if (st === "NONE") return;
 
-        // Si ESP 3D activé, afficher les textes au-dessus de la tête
-        if (data.esp3D && Player.asPlayerMP().distanceTo(p) < 60) {
+        if (Player.asPlayerMP().distanceTo(p) < 60) {
             let txt = "§a★ AMI ★";
             if (st === "INVINCIBLE") txt = "§d§l🛡 GOD 🛡";
-            if (st === "TARGET") txt = "§c§l⚠ TARGET ⚠";
+            if (st === "TARGET") txt = "§c§l⚠ TARGET ⚠"; // Le fameux tag Target simple !
             Tessellator.drawString(txt, p.getRenderX(), p.getRenderY() + p.getHeight() + 0.5, p.getRenderZ(), 0, true, 0.03, false);
-        }
-
-        // NOUVEAUTÉ : HITBOX ROUGE autour des targets (Cibles)
-        if (data.targetEsp && st === "TARGET" && Player.asPlayerMP().distanceTo(p) < 80) {
-            Tessellator.begin(3).lineWidth(3).colorize(1, 0, 0, 1);
-            RenderLib.drawEspBox(p.getRenderX(), p.getRenderY(), p.getRenderZ(), p.getWidth(), p.getHeight(), 1, 0, 0, 0.3, false);
         }
     });
 });
 
-// --- 5. TABLIST & CHAT HIGHLIGHT ---
+// --- 5. TABLIST & GESTION DU CHAT ---
 register("tick", () => {
     if (!World.isLoaded()) return;
     try {
@@ -271,7 +284,6 @@ register("tick", () => {
 
         let netHandler = Client.getMinecraft().func_147114_u();
         let iterator = netHandler.func_175106_d().iterator();
-
         let ChatComponentText = Java.type("net.minecraft.util.ChatComponentText");
 
         while (iterator.hasNext()) {
@@ -296,9 +308,23 @@ register("tick", () => {
 });
 
 register("chat", (event) => {
-    if (!data.chatHighlight) return;
     let msg = ChatLib.getChatMessage(event);
     let clean = ChatLib.removeFormatting(msg);
+
+    // 1. CLOUD BLACKLIST (Mute Global)
+    for (let badGuy of cloudBlacklist) {
+        // Détecte le nom dans le format du chat (ex: "Pseudo : " ou "[Grade] Pseudo > ")
+        if (clean.includes(badGuy + ":") || clean.includes(badGuy + " >") || clean.includes(badGuy + " ")) {
+            // Si le message Vient de ce mec, on le supprime (cancel event)
+            if (clean.toLowerCase().indexOf(badGuy.toLowerCase()) < 15) { // Le nom est au début du message
+                cancel(event);
+                return; // Stop tout, on affiche rien.
+            }
+        }
+    }
+
+    // 2. CHAT HIGHLIGHT (Surligne les amis)
+    if (!data.chatHighlight) return;
     let all =[...data.friends, ...cloudFriends, ...cloudInvincibles, ...cloudTargets];
     
     all.forEach(f => {
