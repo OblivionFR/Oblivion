@@ -1,7 +1,7 @@
 // ==========================================
 // SOLUS CLIENT - LOADER & AUTO-INSTALLER
 // ==========================================
-const CURRENT_VERSION = "1.0"; 
+const CURRENT_VERSION = "1.1"; 
 const CLIENT_NAME = "SolusClient";
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/SolusClient/";
 
