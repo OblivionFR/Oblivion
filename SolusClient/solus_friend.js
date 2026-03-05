@@ -1,30 +1,19 @@
 const S = global.Solus;
-
 let paralyzed = false, pTimer = 0, hpCache = 20;
 let abMsg = "", abTimer = 0, alertedTargets =[];
 
-// --- GAMEPLAY ---
 register("tick", () => {
     if (!World.isLoaded()) return;
     let hp = Player.getHP();
-    
     if (hp < hpCache && hp > 0) {
         let godNear = false;
-        World.getAllPlayers().forEach(p => {
-            if (p.getName() !== Player.getName() && S.getStatus(p.getName()) === "LEGENDARY" && Player.asPlayerMP().distanceTo(p) < 6) godNear = true;
-        });
-        if (godNear && !paralyzed) {
-            paralyzed = true; pTimer = 80;
-            World.playSound("ambient.weather.thunder", 100, 0.5);
-            Client.showTitle("§4§lPARALYSÉ", "§cUn Dieu t'a frappé !", 0, 40, 10);
-        }
+        World.getAllPlayers().forEach(p => { if (p.getName() !== Player.getName() && S.getStatus(p.getName()) === "LEGENDARY" && Player.asPlayerMP().distanceTo(p) < 6) godNear = true; });
+        if (godNear && !paralyzed) { paralyzed = true; pTimer = 80; World.playSound("ambient.weather.thunder", 100, 0.5); Client.showTitle("§4§lPARALYSÉ", "§cUn Dieu t'a frappé !", 0, 40, 10); }
     }
     hpCache = hp;
-
     if (paralyzed) {
         if (pTimer > 0 && Player.getHP() > 0) {
-            pTimer--;
-            let p = Player.getPlayer();
+            pTimer--; let p = Player.getPlayer();
             p.field_70159_w = 0; p.field_70179_y = 0; if (p.field_70181_x > 0) p.field_70181_x = 0;
             Client.getMinecraft().field_71439_g.field_70702_br = 0; Client.getMinecraft().field_71439_g.field_70701_bs = 0;
             abMsg = "§4§lGELÉ PAR UN DIEU..."; abTimer = 5;
@@ -34,21 +23,13 @@ register("tick", () => {
 
 register("attackEntity", (e, ev) => {
     let st = S.getStatus(ChatLib.removeFormatting(e.getName()));
-    if (st === "LEGENDARY") {
-        cancel(ev); World.playSound("mob.wither.idle", 100, 0.5);
-        Player.getPlayer().field_70125_A = 90; Player.getPlayer().field_70177_z += 180;
-        abMsg = "§4§l☠ RESPECTE LES DIEUX ☠"; abTimer = 60;
-    }
+    if (st === "LEGENDARY") { cancel(ev); World.playSound("mob.wither.idle", 100, 0.5); Player.getPlayer().field_70125_A = 90; Player.getPlayer().field_70177_z += 180; abMsg = "§4§l☠ RESPECTE LES DIEUX ☠"; abTimer = 60; }
     else if (st === "INVINCIBLE") { cancel(ev); World.playSound("mob.enderdragon.hit", 100, 0.5); abMsg = "§c§l🛡 INTUABLE 🛡"; abTimer = 40; }
     else if (st === "FRIEND" && !S.config.pvpEnabled) { cancel(ev); World.playSound("random.anvil_land", 100, 0.5); abMsg = "§a§l✔ AMI - COUP BLOQUÉ"; abTimer = 40; }
 });
 
-// --- VISUELS ---
 register("renderOverlay", () => {
-    if (abTimer > 0) {
-        Renderer.drawStringWithShadow(abMsg, Renderer.screen.getWidth()/2 - Renderer.getStringWidth(abMsg)/2, Renderer.screen.getHeight() - 60);
-        abTimer--;
-    }
+    if (abTimer > 0) { Renderer.drawStringWithShadow(abMsg, Renderer.screen.getWidth()/2 - Renderer.getStringWidth(abMsg)/2, Renderer.screen.getHeight() - 60); abTimer--; }
     if (paralyzed) Renderer.drawRect(Renderer.color(50,0,0,80), 0,0, Renderer.screen.getWidth(), Renderer.screen.getHeight());
     
     let w = Renderer.screen.getWidth();
@@ -69,8 +50,28 @@ register("renderOverlay", () => {
     
     if (S.cloud.objective.length > 0) Renderer.drawStringWithShadow("§3§l📌 Objectif: §b" + S.cloud.objective, 5, 5);
 
+    // FRIEND HUD (Affichage des alliés proches)
+    if (S.config.friendHud) {
+        let hudY = 25;
+        Renderer.drawStringWithShadow("§a§lAlliés proches :", 5, hudY);
+        let found = false;
+        World.getAllPlayers().forEach(p => {
+            let n = ChatLib.removeFormatting(p.getName());
+            let st = S.getStatus(n);
+            if (n !== Player.getName() && (st === "FRIEND" || st === "INVINCIBLE" || st === "LEGENDARY")) {
+                let dist = Math.round(Player.asPlayerMP().distanceTo(p));
+                let col = st === "LEGENDARY" ? "§c" : (st === "INVINCIBLE" ? "§d" : "§a");
+                hudY += 10;
+                Renderer.drawStringWithShadow(col + n + " §7[" + dist + "m]", 5, hudY);
+                found = true;
+            }
+        });
+        if (!found) Renderer.drawStringWithShadow("§7Aucun.", 5, hudY + 10);
+    }
+
+    // RADAR 2D
     if (!S.config.radar) return;
-    let rx = 70, ry = 70, s = 50;
+    let rx = 70, ry = S.config.friendHud ? 120 : 70, s = 50; // Descend le radar si le HUD est actif
     if (S.cloud.objective.length > 0) ry += 15;
     Renderer.drawRect(Renderer.color(0,0,0,150), rx-s, ry-s, s*2, s*2);
     Renderer.drawRect(Renderer.color(255,255,255,255), rx-1, ry-1, 2, 2);
@@ -85,7 +86,6 @@ register("renderOverlay", () => {
         let dx = p.getX()-Player.getX(), dz = p.getZ()-Player.getZ();
         let cos = Math.cos(yaw*(Math.PI/180)), sin = Math.sin(yaw*(Math.PI/180));
         let rotX = -(dx*cos - dz*sin), rotY = -(dx*sin + dz*cos);
-        
         if (Math.sqrt(rotX*rotX+rotY*rotY)*1.5 < s) {
             let c = st==="TARGET"?Renderer.color(255,0,0) : st==="INVINCIBLE"?Renderer.color(170,0,255) : st==="LEGENDARY"?Renderer.color(0,0,0) : Renderer.color(0,255,0);
             Renderer.drawRect(c, rx+rotX*1.5-1, ry+rotY*1.5-1, 3, 3);
@@ -100,7 +100,6 @@ register("renderWorld", () => {
         if (n === Player.getName()) return;
         let st = S.getStatus(n);
         if (st === "NONE") return;
-        
         if (Player.asPlayerMP().distanceTo(p) < 60) {
             let txt = "§a★ Solus ★", h = 0.5, sc = 0.03;
             if (st === "TARGET") txt = "§c⚠ CIBLE ⚠";
@@ -111,6 +110,7 @@ register("renderWorld", () => {
     });
 });
 
+// Tablist & Mute Global/Chat
 register("tick", () => {
     if (!World.isLoaded()) return;
     try {
@@ -119,11 +119,9 @@ register("tick", () => {
         let tG = sb.func_96508_e("01_G")||sb.func_96527_f("01_G"); tG.func_96666_b("§d§lGod §d");
         let tF = sb.func_96508_e("02_F")||sb.func_96527_f("02_F"); tF.func_96666_b("§b§lSolus §b");
         let tT = sb.func_96508_e("03_T")||sb.func_96527_f("03_T"); tT.func_96666_b("§c§lTarget §c");
-        
         let nh = Client.getMinecraft().func_147114_u();
         let it = nh.func_175106_d().iterator();
         let CCT = Java.type("net.minecraft.util.ChatComponentText");
-        
         while(it.hasNext()) {
             let inf = it.next();
             let n = inf.func_178845_a().getName();
@@ -141,19 +139,25 @@ register("tick", () => {
 });
 
 register("chat", (e) => {
-    if (e.isCanceled() || !S.config.chatHighlight) return;
-    let m = ChatLib.getChatMessage(e);
-    let c = ChatLib.removeFormatting(m);
+    if (e.isCanceled()) return;
+    let m = ChatLib.getChatMessage(e, false);
+    let c = ChatLib.removeFormatting(m).toLowerCase();
     
+    for (let b of S.cloud.blacklist) if (c.indexOf(b.toLowerCase()) !== -1 && c.indexOf(b.toLowerCase()) < 15) { cancel(e); return; }
+    for (let k of Object.keys(S.config.muted)) if (c.indexOf(k) !== -1 && c.indexOf(k) < 15) { cancel(e); return; }
+
+    if (!S.config.chatHighlight) return;
+    let mColor = ChatLib.getChatMessage(e, true);
+    let clean = ChatLib.removeFormatting(mColor);
     let all =[...S.config.friends, ...S.cloud.friends, ...S.cloud.invincibles, ...S.cloud.targets];
     S.cloud.legendaries.forEach(l => all.push(l.pseudo));
     
     all.forEach(f => {
-        if(c.indexOf(f+":")!=-1 || c.indexOf(f+">")!=-1) {
+        if(clean.indexOf(f+":")!=-1 || clean.indexOf(f+">")!=-1) {
             cancel(e);
             let st = S.getStatus(f);
             let col = st==="TARGET"?"§c§l" : st==="INVINCIBLE"?"§d§l" : st==="LEGENDARY"?"§4§l☠ " : "§b§l";
-            ChatLib.chat(m.replace(new RegExp(f, "i"), col+f+"§r"));
+            ChatLib.chat(mColor.replace(new RegExp(f, "i"), col+f+"§r"));
             if(st!=="TARGET") World.playSound("note.pling", 1, 2);
         }
     });
