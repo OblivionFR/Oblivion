@@ -3,7 +3,7 @@ const S = global.Solus;
 let paralyzed = false, pTimer = 0, hpCache = 20;
 let abMsg = "", abTimer = 0, alertedTargets =[];
 
-// --- GAMEPLAY (PVP & FREEZE) ---
+// --- GAMEPLAY ---
 register("tick", () => {
     if (!World.isLoaded()) return;
     let hp = Player.getHP();
@@ -111,7 +111,6 @@ register("renderWorld", () => {
     });
 });
 
-// --- TABLIST & HIGHLIGHT ---
 register("tick", () => {
     if (!World.isLoaded()) return;
     try {
@@ -154,4 +153,8 @@ register("chat", (e) => {
             cancel(e);
             let st = S.getStatus(f);
             let col = st==="TARGET"?"§c§l" : st==="INVINCIBLE"?"§d§l" : st==="LEGENDARY"?"§4§l☠ " : "§b§l";
-            ChatLib.chat(m.replace(ne
+            ChatLib.chat(m.replace(new RegExp(f, "i"), col+f+"§r"));
+            if(st!=="TARGET") World.playSound("note.pling", 1, 2);
+        }
+    });
+});
