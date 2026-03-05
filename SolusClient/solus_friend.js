@@ -2,7 +2,7 @@ import PogObject from "PogData";
 
 const prefix = "§b[Solus] ";
 const clientData = new PogObject("SolusClient", {
-    friends: [],
+    friends:[],
     pvpEnabled: false,
     chatHighlight: true,
     esp3D: true,
@@ -11,16 +11,15 @@ const clientData = new PogObject("SolusClient", {
 }, "solus_config.json");
 
 // Variables Cloud
-let cLegendaries = [], cFriends = [], cInvincibles = [], cTargets = [], cBlacklist = [], cMotd = "", cObjective = "";
-let lastUpdate = 0;
-let isUpdating = false;
+let cLegendaries = [], cFriends = [], cInvincibles = [], cTargets =[], cMotd = "", cObjective = "";
+global.cloudBlacklist =[]; // Variable globale pour que solus_mute.js puisse la lire
+
+let lastUpdate = 0, isUpdating = false;
 let paralyzed = false, pTimer = 0, hpCache = 20;
-let abMsg = "", abTimer = 0;
-let alertedTargets = [];
+let abMsg = "", abTimer = 0, alertedTargets =[];
 
 const DATA_URL = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/SolusClient/";
 
-// --- SYNC CLOUD ROBUSTE ---
 function syncCloud(verbose) {
     if (isUpdating) return;
     isUpdating = true;
@@ -28,7 +27,6 @@ function syncCloud(verbose) {
         try {
             let t = "?t=" + Date.now();
             
-            // JSON Dieux
             let json = FileLib.getUrlContent(DATA_URL + "legendary_chars.json" + t);
             if (json && json.length > 5) {
                 try {
@@ -38,7 +36,6 @@ function syncCloud(verbose) {
                 } catch (e) {}
             }
 
-            // Listes
             let f = FileLib.getUrlContent(DATA_URL + "default_friend.txt" + t);
             if(f) cFriends = f.split("\n").map(s=>s.trim()).filter(s=>s.length>=3);
             
@@ -49,7 +46,7 @@ function syncCloud(verbose) {
             if(tg) cTargets = tg.split("\n").map(s=>s.trim()).filter(s=>s.length>=3);
 
             let b = FileLib.getUrlContent(DATA_URL + "blacklist.txt" + t);
-            if(b) cBlacklist = b.split("\n").map(s=>s.trim()).filter(s=>s.length>=3);
+            if(b) global.cloudBlacklist = b.split("\n").map(s=>s.trim()).filter(s=>s.length>=3);
 
             let m = FileLib.getUrlContent(DATA_URL + "motd.txt" + t);
             if(m && m.trim().length > 0 && m.trim() !== cMotd) {
@@ -76,7 +73,6 @@ function syncCloud(verbose) {
 
 register("step", () => { if(Date.now() - lastUpdate > 15000) syncCloud(false); }).setFps(1);
 
-// --- UTILITAIRES ---
 function getStatus(name) {
     if(!name) return "NONE";
     let l = ChatLib.removeFormatting(name).toLowerCase().trim();
@@ -93,16 +89,14 @@ function getRole(name) {
     return "Dieu";
 }
 
-// --- COMMANDES (/solus) ---
 register("command", (...args) => {
     if(!args || args.length === 0) {
         ChatLib.chat("§3§m---------------------------------------------");
-        ChatLib.chat("§b§lSolus Client §7v1.0");
-        ChatLib.chat("§3/sf add <pseudo>    §7- Ajouter ami");
-        ChatLib.chat("§3/sf remove <pseudo> §7- Retirer ami");
-        ChatLib.chat("§3/sf list            §7- Voir le Cloud");
-        ChatLib.chat("§3/sf force           §7- §eDebug Cloud");
-        ChatLib.chat("§3/sf toggle <opt>    §7- pvp/radar/esp/alert");
+        ChatLib.chat("§b§lSolus Client");
+        ChatLib.chat("§3/sf add/remove <pseudo> §7- Gérer un ami");
+        ChatLib.chat("§3/sf list                §7- Voir le Cloud");
+        ChatLib.chat("§3/sf force               §7- §eDebug Cloud");
+        ChatLib.chat("§3/sf toggle <opt>        §7- pvp/radar/esp/alert");
         ChatLib.chat("§3§m---------------------------------------------");
         return;
     }
@@ -133,7 +127,6 @@ register("command", () => {
     ChatLib.chat(prefix + "PvP Ami: " + (clientData.pvpEnabled ? "§cON (Danger)" : "§aOFF (Sûr)"));
 }).setName("soluspvp").setAliases("friendpvp");
 
-// --- GAMEPLAY (PVP & FREEZE) ---
 register("tick", () => {
     if(!World.isLoaded()) return;
     let hp = Player.getHP();
@@ -171,7 +164,6 @@ register("attackEntity", (e, ev) => {
     else if(st==="FRIEND" && !clientData.pvpEnabled) { cancel(ev); World.playSound("random.anvil_land", 100, 0.5); abMsg = "§a§l✔ AMI - COUP BLOQUÉ"; abTimer = 40; }
 });
 
-// --- VISUELS ---
 register("renderOverlay", () => {
     if(abTimer > 0) {
         Renderer.drawStringWithShadow(abMsg, Renderer.screen.getWidth()/2 - Renderer.getStringWidth(abMsg)/2, Renderer.screen.getHeight() - 60);
@@ -179,7 +171,6 @@ register("renderOverlay", () => {
     }
     if(paralyzed) Renderer.drawRect(Renderer.color(50,0,0,80), 0,0, Renderer.screen.getWidth(), Renderer.screen.getHeight());
     
-    // Alerte God & Target
     let w = Renderer.screen.getWidth();
     World.getAllPlayers().forEach(p => {
         let d = Player.asPlayerMP().distanceTo(p);
@@ -188,7 +179,6 @@ register("renderOverlay", () => {
             Renderer.drawRect(Renderer.color(255,0,0,op), 0,0, w, Renderer.screen.getHeight());
             Renderer.drawStringWithShadow("§4§l☠ PRÉSENCE DIVINE ☠", w/2 - 60, 40);
         }
-        // Alerte Target
         if(clientData.proximityAlert && getStatus(p.getName())==="TARGET") {
             if(d < 15 && !alertedTargets.includes(p.getName())) {
                 Client.showTitle("§c§l⚠ CIBLE PROCHE ⚠", "§f"+p.getName()+" est à "+Math.round(d)+"m", 0, 40, 10);
@@ -237,7 +227,6 @@ register("renderWorld", () => {
     });
 });
 
-// --- TABLIST & CHAT ---
 register("tick", () => {
     if(!World.isLoaded()) return;
     try {
@@ -265,15 +254,15 @@ register("tick", () => {
     } catch(e){}
 });
 
+// Interception Chat pour l'Highlight
 register("chat", (e) => {
+    if(!clientData.chatHighlight) return;
     let m = ChatLib.getChatMessage(e);
     let c = ChatLib.removeFormatting(m);
-    for(let b of cBlacklist) {
-        if(c.toLowerCase().indexOf(b.toLowerCase())!==-1 && c.toLowerCase().indexOf(b.toLowerCase())<15) { cancel(e); return; }
-    }
-    if(!clientData.chatHighlight) return;
-    let all = [...clientData.friends, ...cFriends, ...cInvincibles, ...cTargets];
+    
+    let all =[...clientData.friends, ...cFriends, ...cInvincibles, ...cTargets];
     cLegendaries.forEach(l => all.push(l.pseudo));
+    
     all.forEach(f => {
         if(c.indexOf(f+":")!=-1 || c.indexOf(f+">")!=-1) {
             cancel(e);
