@@ -3,7 +3,7 @@
 // ==========================================
 const CURRENT_VERSION = "1.0"; 
 const CLIENT_NAME = "SolusClient";
-const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/FriendModule/";
+const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/SolusClient/";
 
 // Liste des fichiers du client
 const FILES_TO_UPDATE = ["index.js", "solus_friend.js", "solus_mute.js"];
