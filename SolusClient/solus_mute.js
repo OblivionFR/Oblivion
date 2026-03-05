@@ -6,21 +6,7 @@ function parseTime(s) {
     let v = parseInt(m[1]), u = m[2].toLowerCase();
     return v * (u==='s'?1000 : u==='m'?60000 : u==='h'?3600000 : 86400000);
 }
-function getPlayers() {
-    let p =[]; try{if(World.isLoaded()) World.getAllPlayers().forEach(x => p.push(x.getName()));}catch(e){}
-    return [...new Set(p)];
-}
 
-function showMuteList() {
-    ChatLib.chat("§3§m---------------------------------------------");
-    ChatLib.chat("§bMutes Locaux ("+Object.keys(S.config.muted).length+"):");
-    Object.keys(S.config.muted).forEach(x => ChatLib.chat(" §7- §e" + S.config.muted[x].name));
-    ChatLib.chat("§cMutes Cloud ("+(S.cloud.blacklist.length)+"):");
-    S.cloud.blacklist.forEach(x => ChatLib.chat(" §7- §c" + x));
-    ChatLib.chat("§3§m---------------------------------------------");
-}
-
-// GUI
 register("command", () => muteGui.open()).setName("smutegui");
 
 muteGui.registerDraw((mx, my) => {
@@ -64,13 +50,18 @@ muteGui.registerClicked((mx, my, b) => {
     });
 });
 
-// COMMANDES MUTE
 register("command", (...args) => {
-    if (!args || args.length === 0) return ChatLib.command("solus", true);
+    if (!args || args.length === 0) return ChatLib.chat(S.prefix + "§cUsage: /smute <pseudo>[temps: 10m, 1h]");
     
     let p = args[0], low = p.toLowerCase();
-    if (low === "list") return showMuteList();
-    if (S.cloud.blacklist.some(x => x.toLowerCase() === low)) return ChatLib.chat("§c" + p + " est déjà muté globalement par le Cloud Solus !");
+    if (low === "list") {
+        ChatLib.chat("§3§m---------------------------------------------");
+        ChatLib.chat("§bMutes Locaux : " + Object.keys(S.config.muted).join(", "));
+        ChatLib.chat("§cMutes Cloud : " + S.cloud.blacklist.join(", "));
+        ChatLib.chat("§3§m---------------------------------------------");
+        return;
+    }
+    if (S.cloud.blacklist.some(x => x.toLowerCase() === low)) return ChatLib.chat(S.prefix + "§cCe joueur est déjà muté globalement !");
 
     let ms = 0, rStart = 1, dur = "Définitif";
     if (args[1] && /^\d+[smhd]$/i.test(args[1])) { ms = parseTime(args[1]); rStart = 2; dur = args[1]; }
@@ -78,20 +69,13 @@ register("command", (...args) => {
     S.config.muted[low] = { name: p, reason: args.slice(rStart).join(" ") || "Aucune", expire: ms > 0 ? Date.now() + ms : null };
     S.config.save();
     ChatLib.chat(S.prefix + "§e"+p+" §amuté. Durée: §f"+dur);
-}).setName("smute").setAliases("solusmute").setTabCompletions((args) => {
-    if(!args || args.length===0) return[];
-    if(args.length===1) return getPlayers().filter(p => !S.config.muted[p.toLowerCase()] && p.toLowerCase().startsWith(args[0].toLowerCase()));
-    if(args.length===2) return["10m", "1h", "1d"];
-    return[];
-});
+}).setName("smute").setAliases("solusmute");
 
 register("command", (p) => {
     if(!p) return ChatLib.chat(S.prefix + "§c/sunmute <pseudo>");
     if(S.config.muted[p.toLowerCase()]) { delete S.config.muted[p.toLowerCase()]; S.config.save(); ChatLib.chat(S.prefix + "§e"+p+" §adémuté !"); }
-    else ChatLib.chat(S.prefix + "§cJoueur introuvable dans tes mutes.");
 }).setName("sunmute").setAliases("solusunmute");
 
-// LOGIQUE MUTE
 register("step", () => {
     let now = Date.now(), ch = false;
     for(let k in S.config.muted) {
@@ -102,15 +86,3 @@ register("step", () => {
     }
     if(ch) S.config.save();
 }).setDelay(5);
-
-register("chat", (e) => {
-    let m = ChatLib.getChatMessage(e, false);
-    let c = ChatLib.removeFormatting(m).toLowerCase();
-    
-    for(let b of S.cloud.blacklist) {
-        if(c.indexOf(b.toLowerCase()) !== -1 && c.indexOf(b.toLowerCase()) < 15) { cancel(e); return; }
-    }
-    for(let k of Object.keys(S.config.muted)) {
-        if(c.indexOf(k) !== -1 && c.indexOf(k) < 15) { cancel(e); return; }
-    }
-});
