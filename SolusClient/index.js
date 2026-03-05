@@ -1,90 +1,72 @@
 // ==========================================
-// SOLUS CLIENT - SECURE LOADER (v13.0)
+// SOLUS CLIENT - LOADER STABLE (ANTI-BOUCLE)
 // ==========================================
 const CLIENT_NAME = "SolusClient";
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/SolusClient/";
+const FILES = ["solus_core.js", "solus_friend.js", "solus_mute.js", "solus_combat.js", "solus_waypoints.js"];
 
-// CHANGE CE NUMÉRO SUR GITHUB POUR DÉCLENCHER UNE MAJ CHEZ LES GENS
-const CURRENT_VERSION = "13.0"; 
-
-const FILES = ["solus_core.js", "solus_friend.js", "solus_mute.js", "solus_combat.js"];
-
-let isInstalling = false;
-
-// Fonction de mise à jour
-function startUpdate(remoteVersion) {
-    if (isInstalling) return;
-    isInstalling = true;
-    
-    ChatLib.chat("§b[Solus] §eMise à jour détectée (v" + remoteVersion + ")... Installation.");
-    
-    new Thread(() => {
-        try {
-            // 1. Télécharger le nouveau index.js (Loader)
-            let newIndex = FileLib.getUrlContent(GITHUB_BASE + "index.js?t=" + Date.now());
-            if (newIndex) FileLib.write(CLIENT_NAME, "index.js", newIndex);
-
-            // 2. Télécharger tous les modules
-            FILES.forEach(file => {
-                let content = FileLib.getUrlContent(GITHUB_BASE + file + "?t=" + Date.now());
-                if (content && content.length > 10) {
-                    FileLib.write(CLIENT_NAME, file, content);
-                    print("[Solus] Installé : " + file);
-                }
-            });
-
-            ChatLib.chat("§b[Solus] §aMise à jour terminée !");
-            ChatLib.chat("§b[Solus] §7Rechargement dans 3 secondes...");
-            Thread.sleep(3000);
-            ChatLib.command("ct load", true);
-            
-        } catch(e) {
-            ChatLib.chat("§c[Solus] Échec de la mise à jour : " + e);
-            isInstalling = false;
-        }
-    }).start();
+// Fonction pour nettoyer le code (retire espaces et sauts de ligne) pour la comparaison
+// Cela empêche la boucle infinie si Windows/Github gèrent les lignes différemment
+function clean(str) {
+    if (!str) return "";
+    return str.replace(/\s+/g, ''); // Retire TOUS les espaces et retours à la ligne
 }
 
-// Vérification au démarrage
-new Thread(() => {
-    try {
-        // On vérifie si les fichiers essentiels manquent
-        let missingFiles = false;
-        FILES.forEach(f => { if (!FileLib.exists(CLIENT_NAME, f)) missingFiles = true; });
+global.SolusUpdater = {
+    check: function() {
+        new Thread(() => {
+            try {
+                let updatedFiles = [];
+                
+                // 1. Vérifier chaque fichier
+                FILES.forEach(file => {
+                    let url = GITHUB_BASE + file + "?t=" + Date.now();
+                    let remoteContent = FileLib.getUrlContent(url);
+                    
+                    if (remoteContent && remoteContent.length > 50) {
+                        let localContent = FileLib.read(CLIENT_NAME, file);
+                        
+                        // Si le fichier n'existe pas OU si le contenu (nettoyé) est différent
+                        if (!FileLib.exists(CLIENT_NAME, file) || clean(localContent) !== clean(remoteContent)) {
+                            print("[Solus] Différence détectée sur " + file + ". Mise à jour...");
+                            FileLib.write(CLIENT_NAME, file, remoteContent);
+                            updatedFiles.push(file);
+                        }
+                    }
+                });
 
-        if (missingFiles) {
-            ChatLib.chat("§b[Solus] §cFichiers manquants détectés ! Réparation...");
-            startUpdate(CURRENT_VERSION);
-            return;
-        }
-
-        // On vérifie la version sur GitHub
-        let remoteIndex = FileLib.getUrlContent(GITHUB_BASE + "index.js?t=" + Date.now());
-        if (remoteIndex) {
-            let match = remoteIndex.match(/const CURRENT_VERSION = "([0-9.]+)";/);
-            if (match) {
-                let remoteVer = match[1];
-                // Si la version GitHub est différente de la nôtre -> MAJ
-                if (remoteVer !== CURRENT_VERSION) {
-                    startUpdate(remoteVer);
+                // 2. Si des fichiers ont changé, on reload UNE SEULE FOIS
+                if (updatedFiles.length > 0) {
+                    ChatLib.chat("§b[Solus] §aMise à jour effectuée (" + updatedFiles.length + " fichiers).");
+                    ChatLib.chat("§b[Solus] §7Rechargement rapide...");
+                    Thread.sleep(1000);
+                    ChatLib.command("ct load", true);
                 } else {
-                    console.log("[Solus] Client à jour (v" + CURRENT_VERSION + ")");
+                    // Si rien n'a changé, on charge juste les scripts
+                    loadModules();
                 }
-            }
-        }
-    } catch(e) {
-        print("[Solus] Impossible de vérifier les MAJ (Pas d'internet ?)");
-    }
-}).start();
 
-// Chargement des modules si pas de MAJ en cours
-if (!isInstalling) {
+            } catch(e) {
+                print("[Solus] Erreur Update: " + e);
+                // En cas d'erreur (pas internet), on charge quand même
+                loadModules();
+            }
+        }).start();
+    }
+};
+
+function loadModules() {
     try {
         require("./solus_core.js");
         require("./solus_friend.js");
         require("./solus_mute.js");
         require("./solus_combat.js");
+        require("./solus_waypoints.js");
+        print("[Solus] Modules chargés.");
     } catch(e) {
-        console.log("[Solus] Erreur chargement modules: " + e);
+        ChatLib.chat("§c[Solus] Erreur chargement : " + e);
     }
 }
+
+// Lancement
+global.SolusUpdater.check();
