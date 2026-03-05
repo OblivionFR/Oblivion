@@ -1,20 +1,21 @@
 // ==========================================
 // SOLUS CLIENT - LOADER & AUTO-INSTALLER
 // ==========================================
-const CURRENT_VERSION = "1.1"; 
+const CURRENT_VERSION = "2.0"; 
 const CLIENT_NAME = "SolusClient";
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/refs/heads/main/SolusClient/";
 
-const FILES_TO_UPDATE =["index.js", "solus_friend.js", "solus_mute.js"];
+// Les 4 fichiers vitaux du client
+const FILES_TO_UPDATE =["index.js", "solus_core.js", "solus_friend.js", "solus_mute.js"];
 const File = Java.type("java.io.File");
 
 let needsReload = false;
 
-// 1. VÉRIFICATION ET CRÉATION DES FICHIERS MANQUANTS (Auto-Install)
+// 1. INSTALLATION INITIALE
 FILES_TO_UPDATE.forEach(file => {
     let f = new File(Config.modulesFolder + "/" + CLIENT_NAME + "/" + file);
     if (!f.exists()) {
-        print("[Solus] Installation du fichier manquant : " + file);
+        print("[Solus] Installation de : " + file);
         let content = FileLib.getUrlContent(GITHUB_BASE + file + "?t=" + Date.now());
         if (content && content.length > 10) {
             FileLib.write(CLIENT_NAME, file, content);
@@ -24,10 +25,10 @@ FILES_TO_UPDATE.forEach(file => {
 });
 
 if (needsReload) {
-    ChatLib.chat("§b[Solus] §aInstallation initiale terminée ! Lancement dans 2 secondes...");
+    ChatLib.chat("§b[Solus] §aInstallation terminée ! Lancement dans 2 secondes...");
     setTimeout(() => ChatLib.command("ct load", true), 2000);
 } else {
-    // 2. VÉRIFICATION DES MISES À JOUR (Auto-Updater en arrière-plan)
+    // 2. VÉRIFICATION DES MISES À JOUR
     new Thread(() => {
         try {
             let remoteIndex = FileLib.getUrlContent(GITHUB_BASE + "index.js?t=" + Date.now());
@@ -39,9 +40,7 @@ if (needsReload) {
                 
                 FILES_TO_UPDATE.forEach(file => {
                     let content = FileLib.getUrlContent(GITHUB_BASE + file + "?t=" + Date.now());
-                    if (content && content.length > 10) {
-                        FileLib.write(CLIENT_NAME, file, content);
-                    }
+                    if (content && content.length > 10) FileLib.write(CLIENT_NAME, file, content);
                 });
 
                 ChatLib.chat("§b[Solus] §aMise à jour terminée ! Rechargement...");
@@ -50,10 +49,11 @@ if (needsReload) {
         } catch(e) {}
     }).start();
 
-    // 3. CHARGEMENT DES SOUS-MODULES
+    // 3. CHARGEMENT DES SOUS-MODULES (Dans un ordre précis)
     try {
-        require("./solus_friend.js");
-        require("./solus_mute.js");
+        require("./solus_core.js");   // Le cerveau en premier
+        require("./solus_friend.js"); // Le moteur d'amis
+        require("./solus_mute.js");   // Le moteur de mute
         print("[Solus] Modules chargés avec succès.");
     } catch(e) {
         ChatLib.chat("§c[Solus] Erreur critique au chargement : " + e);
