@@ -1,15 +1,14 @@
 // ==========================================
-// SOLUS CLIENT - LOADER STABLE (ANTI-BOUCLE)
+// SOLUS CLIENT - LOADER v14.0
 // ==========================================
 const CLIENT_NAME = "SolusClient";
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/SolusClient/";
-const FILES = ["solus_core.js", "solus_friend.js", "solus_mute.js", "solus_combat.js", "solus_waypoints.js"];
+const FILES = ["solus_core.js", "solus_friend.js", "solus_mute.js", "solus_combat.js", "solus_waypoints.js", "solus_chat.js"];
 
-// Fonction pour nettoyer le code (retire espaces et sauts de ligne) pour la comparaison
-// Cela empêche la boucle infinie si Windows/Github gèrent les lignes différemment
+// Fonction de nettoyage pour comparaison stricte
 function clean(str) {
     if (!str) return "";
-    return str.replace(/\s+/g, ''); // Retire TOUS les espaces et retours à la ligne
+    return str.replace(/\s+/g, '');
 }
 
 global.SolusUpdater = {
@@ -17,56 +16,44 @@ global.SolusUpdater = {
         new Thread(() => {
             try {
                 let updatedFiles = [];
-                
-                // 1. Vérifier chaque fichier
                 FILES.forEach(file => {
                     let url = GITHUB_BASE + file + "?t=" + Date.now();
                     let remoteContent = FileLib.getUrlContent(url);
                     
                     if (remoteContent && remoteContent.length > 50) {
                         let localContent = FileLib.read(CLIENT_NAME, file);
-                        
-                        // Si le fichier n'existe pas OU si le contenu (nettoyé) est différent
                         if (!FileLib.exists(CLIENT_NAME, file) || clean(localContent) !== clean(remoteContent)) {
-                            print("[Solus] Différence détectée sur " + file + ". Mise à jour...");
+                            print("[Solus] Mise à jour de " + file);
                             FileLib.write(CLIENT_NAME, file, remoteContent);
                             updatedFiles.push(file);
                         }
                     }
                 });
 
-                // 2. Si des fichiers ont changé, on reload UNE SEULE FOIS
                 if (updatedFiles.length > 0) {
-                    ChatLib.chat("§b[Solus] §aMise à jour effectuée (" + updatedFiles.length + " fichiers).");
-                    ChatLib.chat("§b[Solus] §7Rechargement rapide...");
-                    Thread.sleep(1000);
-                    ChatLib.command("ct load", true);
+                    ChatLib.chat("§b[Solus] §aMise à jour terminée ! Rechargement...");
+                    setTimeout(() => ChatLib.command("ct load", true), 2000);
                 } else {
-                    // Si rien n'a changé, on charge juste les scripts
                     loadModules();
                 }
-
-            } catch(e) {
-                print("[Solus] Erreur Update: " + e);
-                // En cas d'erreur (pas internet), on charge quand même
-                loadModules();
-            }
+            } catch(e) { loadModules(); }
         }).start();
     }
 };
 
 function loadModules() {
     try {
-        require("./solus_core.js");
+        // Ordre critique pour que les commandes marchent
+        require("./solus_core.js");   
+        require("./solus_chat.js");   // Nouveau module
         require("./solus_friend.js");
         require("./solus_mute.js");
         require("./solus_combat.js");
         require("./solus_waypoints.js");
-        print("[Solus] Modules chargés.");
+        print("[Solus] Tous les modules sont chargés.");
     } catch(e) {
         ChatLib.chat("§c[Solus] Erreur chargement : " + e);
     }
 }
 
-// Lancement
 global.SolusUpdater.check();
