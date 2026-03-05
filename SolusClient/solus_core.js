@@ -1,34 +1,21 @@
 import PogObject from "PogData";
 
 // --- 1. INITIALISATION GLOBALE ---
-// Ce "global.Solus" permet aux autres fichiers de lire ces données !
-global.Solus = {
-    prefix: "§b[Solus] ",
-    config: new PogObject("SolusClient", {
-        friends:[],
-        muted: {},
-        pvpEnabled: false,
-        chatHighlight: true,
-        esp3D: true,
-        radar: true,
-        proximityAlert: true
-    }, "solus_data.json"),
-    cloud: {
-        legendaries: [],
-        friends: [],
-        invincibles: [],
-        targets: [],
-        blacklist:[],
-        motd: "",
-        objective: ""
-    }
-};
+if (!global.Solus) {
+    global.Solus = {
+        prefix: "§b[Solus] ",
+        config: new PogObject("SolusClient", {
+            friends:[], muted: {}, pvpEnabled: false, chatHighlight: true, esp3D: true, radar: true, proximityAlert: true
+        }, "solus_data.json"),
+        cloud: { legendaries: [], friends: [], invincibles: [], targets: [], blacklist:[], motd: "", objective: "" }
+    };
+}
 
 const S = global.Solus;
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/SolusClient/";
-let lastUpdate = 0, isUpdating = false;
+let lastSync = 0, isSyncing = false;
 
-// --- 2. FONCTIONS DE HIÉRARCHIE GLOBALES ---
+// --- 2. FONCTIONS DE HIÉRARCHIE ---
 global.Solus.getStatus = function(name) {
     if (!name) return "NONE";
     let l = ChatLib.removeFormatting(name).toLowerCase().trim();
@@ -52,27 +39,24 @@ global.Solus.getRole = function(name) {
     return "Dieu";
 };
 
-// --- 3. SYNCHRONISATION CLOUD ---
-function syncCloud(verbose) {
-    if (isUpdating) return;
-    isUpdating = true;
+// --- 3. SYNCHRONISATION DES LISTES CLOUD ---
+function syncCloudData(verbose) {
+    if (isSyncing) return;
+    isSyncing = true;
     new Thread(() => {
         try {
             let t = "?t=" + Date.now();
             let cl = S.cloud;
             
-            // JSON LÉGENDAIRES
             let jsonRaw = FileLib.getUrlContent(GITHUB_BASE + "legendary_chars.json" + t);
             if (jsonRaw) {
-                let start = jsonRaw.indexOf("{");
-                let end = jsonRaw.lastIndexOf("}");
+                let start = jsonRaw.indexOf("{"), end = jsonRaw.lastIndexOf("}");
                 if (start !== -1 && end !== -1) {
                     let parsed = JSON.parse(jsonRaw.substring(start, end + 1));
                     if (parsed.admins) cl.legendaries = parsed.admins;
                 }
             }
 
-            // LISTES TEXTES
             let f = FileLib.getUrlContent(GITHUB_BASE + "default_friend.txt" + t);
             if (f) cl.friends = f.split("\n").map(s => s.trim()).filter(s => s.length >= 3);
             
@@ -99,25 +83,26 @@ function syncCloud(verbose) {
                 }
             }
 
-            lastUpdate = Date.now();
-            if (verbose) ChatLib.chat(S.prefix + "§aCloud Synchronisé avec succès !");
+            lastSync = Date.now();
+            if (verbose) ChatLib.chat(S.prefix + "§aListes Cloud Synchronisées !");
         } catch(e) {}
-        isUpdating = false;
+        isSyncing = false;
     }).start();
 }
 
-register("step", () => { if (Date.now() - lastUpdate > 15000) syncCloud(false); }).setFps(1);
+register("step", () => { if (Date.now() - lastSync > 15000) syncCloudData(false); }).setFps(1);
 
-// --- 4. HUB DE COMMANDES GLOBALES ---
+// --- 4. COMMANDE GLOBALE /SOLUS ---
 register("command", (...args) => {
     if (!args || args.length === 0) {
         ChatLib.chat("§3§m---------------------------------------------");
         ChatLib.chat("§b§lSolus Client §7- Hub Global");
         ChatLib.chat("§3/solus add/remove <pseudo> §7- Gérer un ami");
         ChatLib.chat("§3/solus list                §7- Voir stats du Cloud");
-        ChatLib.chat("§3/solus force               §7- §eForcer Synchro Cloud");
+        ChatLib.chat("§3/solus force               §7- §eForcer Synchro Listes Cloud");
+        ChatLib.chat("§3/solus update              §7- §aVérifier les MAJ du Code Client");
         ChatLib.chat("§3/solus toggle <opt>        §7- pvp/radar/esp/alert");
-        ChatLib.chat("§3/soluspvp                  §7- Taper un ami");
+        ChatLib.chat("§3/soluspvp                  §7- Autoriser de taper un ami");
         ChatLib.chat("");
         ChatLib.chat("§b§lModule Mute :");
         ChatLib.chat("§3/smutegui                  §7- Menu des mutes");
@@ -129,7 +114,12 @@ register("command", (...args) => {
     }
 
     let a = args[0].toLowerCase();
-    if (a === "force") { ChatLib.chat(S.prefix + "§eTéléchargement forcé..."); syncCloud(true); }
+    
+    if (a === "update") {
+        ChatLib.chat(S.prefix + "§eRecherche de mise à jour du client...");
+        if (global.SolusUpdater) global.SolusUpdater.check(true, false);
+    }
+    else if (a === "force") { ChatLib.chat(S.prefix + "§eTéléchargement forcé des listes..."); syncCloudData(true); }
     else if (a === "add" && args[1]) {
         if (!S.config.friends.includes(args[1])) {
             S.config.friends.push(args[1]); S.config.save();
@@ -150,8 +140,8 @@ register("command", (...args) => {
         else if (opt === "radar") S.config.radar = !S.config.radar;
         else if (opt === "esp") S.config.esp3D = !S.config.esp3D;
         else if (opt === "alert") S.config.proximityAlert = !S.config.proximityAlert;
-        S.config.save();
-        ChatLib.chat(S.prefix + "Option §e" + opt + " §fmise à jour.");
+        else return ChatLib.chat(S.prefix + "§cOptions: pvp, radar, esp, alert.");
+        S.config.save(); ChatLib.chat(S.prefix + "Option §e" + opt + " §fmise à jour.");
     }
 }).setName("solus").setAliases("sf");
 
