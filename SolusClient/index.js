@@ -1,7 +1,7 @@
 const CLIENT_NAME = "SolusClient";
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/SolusClient/";
 // Liste complète des modules (Ne rien enlever)
-const FILES = ["solus_core.js", "solus_friend.js", "solus_mute.js", "solus_chat.js", "solus_combat.js", "solus_waypoints.js"];
+const FILES = ["solus_core.js", "solus_friend.js", "solus_mute.js", "solus_chat.js", "solus_combat.js", "solus_waypoints.js", "solus_filter.js"];
 
 // Change ce numéro pour forcer une mise à jour chez les autres
 const LOADER_VERSION = "15.0"; 
@@ -56,6 +56,7 @@ try {
     require("./solus_mute.js");      // 4. Mute
     require("./solus_combat.js");    // 5. Combat
     require("./solus_waypoints.js"); // 6. Waypoints
+    require("./solus_filter.js");
     print("[Solus] Client chargé avec succès (v" + LOADER_VERSION + ").");
 } catch(e) {
     console.log("[Solus] Erreur chargement : " + e);
