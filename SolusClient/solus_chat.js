@@ -7,16 +7,6 @@ function getTime() {
     return `§8[${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}] `;
 }
 
-function getPlayerUUID(name) {
-    let p = World.getPlayerByName(name);
-    return p ? p.getUUID().toString() : null; 
-}
-
-function checkFilter(message, filterStr) {
-    try { if (new RegExp(filterStr, "i").test(message)) return true; } catch(e) {}
-    return message.toLowerCase().includes(filterStr.toLowerCase());
-}
-
 register("chat", (event) => {
     let formatted = ChatLib.getChatMessage(event, true);
     if (formatted.includes("§c[✖]") || formatted.includes("§8[")) return; 
@@ -25,15 +15,23 @@ register("chat", (event) => {
     let cleanMsg = ChatLib.removeFormatting(unformatted);
     let lowerMsg = cleanMsg.toLowerCase();
 
-    // FILTRES CLOUD & LOCAL
-    if (S.config.chatFilter) {
-        for (let f of S.cloud.filters) { if (checkFilter(cleanMsg, f)) { cancel(event); return; } }
-        for (let f of S.data.filters) { if (checkFilter(cleanMsg, f)) { cancel(event); return; } }
-    }
+    // On récupère juste le début du message (celui qui l'envoie) pour éviter de muter s'il est cité
+    let prefixChat = lowerMsg.split(":")[0] || lowerMsg.split(">")[0] || lowerMsg;
 
     // MUTES CLOUD & LOCAL
-    for (let b of S.cloud.blacklist) { if (lowerMsg.includes(b.toLowerCase()) && lowerMsg.indexOf(b.toLowerCase()) < 20) { cancel(event); return; } }
-    for (let k in S.data.muted) { if (lowerMsg.includes(k) && lowerMsg.indexOf(k) < 20) { cancel(event); return; } }
+    for (let b of S.cloud.blacklist) { if (prefixChat.includes(b.toLowerCase())) { cancel(event); return; } }
+    for (let k in S.data.muted) { if (prefixChat.includes(k)) { cancel(event); return; } }
+
+    // FILTRES CLOUD & LOCAL (Mots exacts uniquement, pour pas bloquer "L" dans "Salut")
+    if (S.config.chatFilter) {
+        let allFilters =[...S.cloud.filters, ...S.data.filters];
+        for (let f of allFilters) {
+            try {
+                let regex = new RegExp("\\b" + f + "\\b", "i"); // \b = mot exact
+                if (regex.test(cleanMsg)) { cancel(event); return; }
+            } catch(e) {}
+        }
+    }
 
     // RECONSTRUCTION DU MESSAGE
     cancel(event); 
@@ -45,42 +43,30 @@ register("chat", (event) => {
         del.setClick("run_command", "/solusdel " + msgId).setHover("show_text", "§cSupprimer");
         finalMsg.addTextComponent(del);
     }
-    if (S.config.timestamps) {
-        finalMsg.addTextComponent(new TextComponent(getTime()));
+    if (S.config.timestamps) finalMsg.addTextComponent(new TextComponent(getTime()));
+
+    // Ajout du texte original
+    let finalString = formatted;
+    
+    // Highlight des pseudos
+    if (S.config.chatHighlight) {
+        let allSpecial =[...S.data.friends, ...S.cloud.friends, ...S.cloud.invincibles, ...S.cloud.targets];
+        S.cloud.legendaries.forEach(l => allSpecial.push(l.pseudo));
+        
+        allSpecial.forEach(f => {
+            if (f.length > 2 && cleanMsg.toLowerCase().includes(f.toLowerCase())) {
+                let st = S.getStatus(f);
+                if (st !== "NONE") {
+                    let col = st==="TARGET"?"§c§l" : st==="INVINCIBLE"?"§d§l" : st==="LEGENDARY"?"§4§l☠ " : "§b§l";
+                    let regex = new RegExp(f, "gi"); // Remplace sans faire attention aux majuscules
+                    finalString = finalString.replace(regex, col + f + "§r");
+                    if (st === "TARGET") World.playSound("note.pling", 1, 2);
+                }
+            }
+        });
     }
 
-    let parts = formatted.split(" ");
-    parts.forEach((part, index) => {
-        let cleanWord = ChatLib.removeFormatting(part).replace(/[^a-zA-Z0-9_]/g, ""); 
-        let st = S.getStatus(cleanWord);
-        let uuid = getPlayerUUID(cleanWord);
-        
-        if (st !== "NONE") {
-            let badge = "", color = "§7", roleName = "Joueur";
-            if (st === "TARGET") { badge = "§c[CIBLE] "; color = "§c"; roleName = "Ennemi Faction"; if (!part.includes("§c")) World.playSound("note.pling", 1, 2); }
-            else if (st === "INVINCIBLE") { badge = "§d[GOD] "; color = "§d"; roleName = "Invincible"; }
-            else if (st === "LEGENDARY") { badge = "§4[DIEU] "; color = "§4"; roleName = S.getRole(cleanWord); }
-            else if (st === "FRIEND") { badge = "§a[AMI] "; color = "§a"; roleName = "Ami"; }
-
-            let displayPart = badge + part.replace(cleanWord, color + cleanWord + "§r");
-            let comp = new TextComponent(displayPart + " ");
-            
-            let hTxt = `§b§lSolus Info\n${color}Grade: §f${roleName}`;
-            hTxt += uuid ? `\n§7Clique pour ouvrir NameMC` : `\n§8(UUID non trouvé)`;
-            comp.setHover("show_text", hTxt);
-            if (uuid) comp.setClick("open_url", "https://namemc.com/profile/" + uuid);
-
-            finalMsg.addTextComponent(comp);
-        } else {
-            if (uuid && cleanWord.length > 2) {
-                let comp = new TextComponent(part + " ");
-                comp.setHover("show_text", "§7Ouvrir NameMC de §f" + cleanWord);
-                comp.setClick("open_url", "https://namemc.com/profile/" + uuid);
-                finalMsg.addTextComponent(comp);
-            } else finalMsg.addTextComponent(part + " ");
-        }
-    });
-
+    finalMsg.addTextComponent(finalString);
     finalMsg.setChatLineId(msgId);
     ChatLib.chat(finalMsg);
 });
