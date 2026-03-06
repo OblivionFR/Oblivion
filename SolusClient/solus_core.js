@@ -6,8 +6,9 @@ if (!global.Solus) {
         config: new PogObject("SolusClient", {
             friends: [], muted: {}, pvpEnabled: false, 
             chatHighlight: true, esp3D: true, radar: true, proximityAlert: true, targetHud: true,
-            chatFilter: true, chatDelete: true, showWaypoints: true, friendHud: true, comboCounter: true
-        }, "solus_data_v6.json"),
+            chatFilter: true, chatDelete: true, timestamps: true, // NOUVEAU
+            showWaypoints: true, friendHud: true, comboCounter: true
+        }, "solus_data_v7.json"),
         cloud: { legendaries: [], friends: [], invincibles: [], targets: [], blacklist: [], filters: [], motd: "", objective: "" }
     };
 }
@@ -87,44 +88,24 @@ register("command", (...args) => {
     if (!args || args.length === 0) {
         ChatLib.chat("§3§m---------------------------------------------");
         ChatLib.chat("§b§lSolus Client §7- Hub");
-        ChatLib.chat("§3/solus friend <add|remove|list> §7- Amis");
-        ChatLib.chat("§3/solus mute <pseudo> [tps]      §7- Muter (ou /smute)");
-        ChatLib.chat("§3/solus unmute <pseudo>          §7- Démuter");
-        ChatLib.chat("§3/solus toggle <opt>             §7- pvp/esp/radar/hud/wp");
-        ChatLib.chat("§3/solus force                    §7- Force Update Cloud");
-        ChatLib.chat("§3/smutegui                       §7- Interface Mute");
+        ChatLib.chat("§3/sf friend <add|remove|list> §7- Amis");
+        ChatLib.chat("§3/sf toggle <opt>             §7- pvp/esp/radar/hud/time");
+        ChatLib.chat("§3/sf force                    §7- Force Update Cloud");
+        ChatLib.chat("§3/smute <pseudo>              §7- Mute un joueur");
         ChatLib.chat("§3§m---------------------------------------------");
         return;
     }
     
     let cat = args[0].toLowerCase();
 
-    // Gestion /solus friend
     if (cat === "friend") {
-        let act = args[1];
-        let target = args[2];
-        if (act === "add" && target) {
-            if (!S.config.friends.includes(target)) { S.config.friends.push(target); S.config.save(); ChatLib.chat(S.prefix + "§aAmi ajouté : " + target); }
-            else ChatLib.chat(S.prefix + "§cDéjà ami.");
-        }
-        else if (act === "remove" && target) {
-            S.config.friends = S.config.friends.filter(x => x.toLowerCase() !== target.toLowerCase()); S.config.save(); ChatLib.chat(S.prefix + "§cAmi retiré : " + target);
-        }
-        else if (act === "list") {
-            ChatLib.chat("§6Cloud: §a" + S.cloud.friends.length + " Amis / §c" + S.cloud.legendaries.length + " Dieux");
-            ChatLib.chat("§3Local: " + S.config.friends.join(", "));
-        }
+        let act = args[1]; let target = args[2];
+        if (act === "add" && target) { if (!S.config.friends.includes(target)) { S.config.friends.push(target); S.config.save(); ChatLib.chat(S.prefix + "§aAmi ajouté : " + target); } }
+        else if (act === "remove" && target) { S.config.friends = S.config.friends.filter(x => x.toLowerCase() !== target.toLowerCase()); S.config.save(); ChatLib.chat(S.prefix + "§cAmi retiré : " + target); }
+        else if (act === "list") { ChatLib.chat("§6Cloud: §a" + S.cloud.friends.length + " Amis. §3Local: " + S.config.friends.join(", ")); }
     }
-    // Gestion /solus mute (Redirection)
-    else if (cat === "mute") {
-        if (args[1]) ChatLib.command("smute " + args.slice(1).join(" "), true);
-        else ChatLib.chat(S.prefix + "Usage: /solus mute <pseudo> [temps]");
-    }
-    // Gestion /solus unmute
-    else if (cat === "unmute") {
-        if (args[1]) ChatLib.command("sunmute " + args[1], true);
-    }
-    // Gestion Options
+    else if (cat === "mute") { if (args[1]) ChatLib.command("smute " + args.slice(1).join(" "), true); }
+    else if (cat === "unmute") { if (args[1]) ChatLib.command("sunmute " + args[1], true); }
     else if (cat === "toggle" && args[1]) {
         let o = args[1].toLowerCase();
         if(o=="pvp") S.config.pvpEnabled = !S.config.pvpEnabled;
@@ -134,16 +115,12 @@ register("command", (...args) => {
         if(o=="wp") S.config.showWaypoints = !S.config.showWaypoints;
         if(o=="filter") S.config.chatFilter = !S.config.chatFilter;
         if(o=="delete") S.config.chatDelete = !S.config.chatDelete;
+        if(o=="time") S.config.timestamps = !S.config.timestamps; // Toggle pour l'heure
         S.config.save(); ChatLib.chat(S.prefix + "Option §e" + o + " §fmise à jour.");
     }
-    // Debug
-    else if (cat === "force") {
-        ChatLib.chat(S.prefix + "§eTéléchargement forcé...");
-        syncCloudData(true);
-    }
+    else if (cat === "force") { ChatLib.chat(S.prefix + "§eForçage..."); syncCloudData(true); }
 }).setName("solus").setAliases("sf");
 
-// Raccourci PvP
 register("command", () => {
     S.config.pvpEnabled = !S.config.pvpEnabled; S.config.save();
     ChatLib.chat(S.prefix + "PvP Ami: " + (S.config.pvpEnabled ? "§cON" : "§aOFF"));
