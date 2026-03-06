@@ -41,7 +41,7 @@ muteGui.registerDraw((mx, my) => {
 
     Renderer.drawRect(Renderer.color(255, 255, 255, 50), w/2, h/2 - 90, 1, 200);
     Renderer.drawString("§cMutes Cloud (Global) :", w/2 + 20, h/2 - 90);
-    if (S.cloud.blacklist.length === 0) Renderer.drawString("§7Aucun spammeur global.", w/2 + 20, h/2 - 75);
+    if (S.cloud.blacklist.length === 0) Renderer.drawString("§7Aucun.", w/2 + 20, h/2 - 75);
     else {
         let y = h/2 - 75;
         S.cloud.blacklist.slice(0, 12).forEach((name, i) => { Renderer.drawString(`§c☠ ${name}`, w/2 + 20, y + (i * 15)); });
@@ -54,7 +54,7 @@ muteGui.registerClicked((mx, my, b) => {
     Object.keys(S.data.muted).slice(0, 10).forEach((k, i) => {
         let bx = Renderer.screen.getWidth()/2 - 40, by = y + (i*15) - 2;
         if(mx>=bx && mx<=bx+40 && my>=by && my<=by+10) {
-            delete S.data.muted[k]; S.data.save(); World.playSound("random.click", 1, 1);
+            delete S.data.muted[k]; S.saveData(); World.playSound("random.click", 1, 1);
         }
     });
 });
@@ -68,28 +68,28 @@ register("command", (...args) => {
     let p = args[0], low = p.toLowerCase();
     
     if (low === "list") return showMuteList();
-    if (S.cloud.blacklist.some(x => x.toLowerCase() === low)) return ChatLib.chat(S.prefix + "§cCe joueur est muté par le Cloud !");
+    if (S.cloud.blacklist.some(x => x.toLowerCase() === low)) return ChatLib.chat(S.prefix + "§cMuté par le Cloud !");
 
     let ms = 0, rStart = 1, dur = "Définitif";
     if (args[1] && /^\d+[smhd]$/i.test(args[1])) { ms = parseTime(args[1]); rStart = 2; dur = args[1]; }
     
     S.data.muted[low] = { name: p, reason: args.slice(rStart).join(" ") || "Aucune", expire: ms > 0 ? Date.now() + ms : null };
-    S.data.save();
+    S.saveData();
     ChatLib.chat(S.prefix + "§e"+p+" §amuté. Durée: §f"+dur);
 }).setName("smute").setAliases("solusmute");
 
 register("command", (p) => {
     if(!p) return ChatLib.chat(S.prefix + "§c/sunmute <pseudo>");
-    if(S.data.muted[p.toLowerCase()]) { delete S.data.muted[p.toLowerCase()]; S.data.save(); ChatLib.chat(S.prefix + "§e"+p+" §adémuté !"); }
+    if(S.data.muted[p.toLowerCase()]) { delete S.data.muted[p.toLowerCase()]; S.saveData(); ChatLib.chat(S.prefix + "§e"+p+" §adémuté !"); }
 }).setName("sunmute").setAliases("solusunmute");
 
 register("step", () => {
     let now = Date.now(), ch = false;
     for(let k in S.data.muted) {
         if(S.data.muted[k].expire && S.data.muted[k].expire <= now) {
-            ChatLib.chat(S.prefix + "Mute temporaire expiré pour §e"+S.data.muted[k].name);
+            ChatLib.chat(S.prefix + "Mute expiré pour §e"+S.data.muted[k].name);
             delete S.data.muted[k]; ch = true;
         }
     }
-    if(ch) S.data.save();
+    if(ch) S.saveData();
 }).setDelay(5);
