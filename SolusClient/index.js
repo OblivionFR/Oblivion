@@ -4,15 +4,16 @@
 const CLIENT_NAME = "SolusClient";
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/SolusClient/";
 
-// Liste de TOUS les fichiers du module
-const FILES = [
+// Liste de TOUS les fichiers du module (J'ai ajouté solus_tab.js)
+const FILES =[
     "solus_core.js", 
     "solus_friend.js", 
     "solus_mute.js", 
     "solus_combat.js", 
     "solus_waypoints.js", 
     "solus_chat.js",
-    "solus_filter.js"
+    "solus_filter.js",
+    "solus_tab.js"
 ];
 
 // Fonction pour normaliser le texte (Rend compatible Windows/Linux pour la comparaison)
@@ -27,7 +28,7 @@ global.SolusUpdater = {
         new Thread(() => {
             try {
                 let needsReload = false;
-                let updatedList = [];
+                let updatedList =[];
 
                 // 1. Vérification du Loader lui-même (index.js)
                 // On utilise un paramètre de temps ?t=... pour éviter le cache
@@ -65,13 +66,13 @@ global.SolusUpdater = {
                     Thread.sleep(1500); // Petite pause pour laisser le temps d'écrire
                     ChatLib.command("ct load", true);
                 } else {
-                    // Si tout est pareil, on charge
+                    // Si tout est pareil, on charge les modules directement
                     loadModules();
                 }
 
             } catch(e) {
                 print("[Solus] Erreur de vérification (Pas de connexion ?) : " + e);
-                // En cas d'erreur, on essaie quand même de charger ce qu'on a
+                // En cas d'erreur, on essaie quand même de charger ce qu'on a en local
                 loadModules();
             }
         }).start();
@@ -83,6 +84,7 @@ function loadModules() {
         // Chargement de tous les sous-fichiers
         require("./solus_core.js");
         require("./solus_chat.js");
+        require("./solus_tab.js");
         require("./solus_friend.js");
         require("./solus_mute.js");
         require("./solus_combat.js");
