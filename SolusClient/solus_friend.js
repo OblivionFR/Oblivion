@@ -1,4 +1,5 @@
 const S = global.Solus;
+
 let paralyzed = false, pTimer = 0, hpCache = 20;
 let abMsg = "", abTimer = 0, alertedTargets =[];
 
@@ -50,17 +51,16 @@ register("renderOverlay", () => {
     
     if (S.cloud.objective.length > 0) Renderer.drawStringWithShadow("§3§l📌 Objectif: §b" + S.cloud.objective, 5, 5);
 
-    // FRIEND HUD (Affichage des alliés proches)
     if (S.config.friendHud) {
         let hudY = 25;
-        Renderer.drawStringWithShadow("§a§lAlliés proches :", 5, hudY);
+        Renderer.drawStringWithShadow("§b§lAlliés proches :", 5, hudY);
         let found = false;
         World.getAllPlayers().forEach(p => {
             let n = ChatLib.removeFormatting(p.getName());
             let st = S.getStatus(n);
             if (n !== Player.getName() && (st === "FRIEND" || st === "INVINCIBLE" || st === "LEGENDARY")) {
                 let dist = Math.round(Player.asPlayerMP().distanceTo(p));
-                let col = st === "LEGENDARY" ? "§c" : (st === "INVINCIBLE" ? "§d" : "§a");
+                let col = st === "LEGENDARY" ? "§c" : (st === "INVINCIBLE" ? "§d" : "§b");
                 hudY += 10;
                 Renderer.drawStringWithShadow(col + n + " §7[" + dist + "m]", 5, hudY);
                 found = true;
@@ -69,9 +69,8 @@ register("renderOverlay", () => {
         if (!found) Renderer.drawStringWithShadow("§7Aucun.", 5, hudY + 10);
     }
 
-    // RADAR 2D
     if (!S.config.radar) return;
-    let rx = 70, ry = S.config.friendHud ? 120 : 70, s = 50; // Descend le radar si le HUD est actif
+    let rx = 70, ry = S.config.friendHud ? 120 : 70, s = 50; 
     if (S.cloud.objective.length > 0) ry += 15;
     Renderer.drawRect(Renderer.color(0,0,0,150), rx-s, ry-s, s*2, s*2);
     Renderer.drawRect(Renderer.color(255,255,255,255), rx-1, ry-1, 2, 2);
@@ -87,7 +86,7 @@ register("renderOverlay", () => {
         let cos = Math.cos(yaw*(Math.PI/180)), sin = Math.sin(yaw*(Math.PI/180));
         let rotX = -(dx*cos - dz*sin), rotY = -(dx*sin + dz*cos);
         if (Math.sqrt(rotX*rotX+rotY*rotY)*1.5 < s) {
-            let c = st==="TARGET"?Renderer.color(255,0,0) : st==="INVINCIBLE"?Renderer.color(170,0,255) : st==="LEGENDARY"?Renderer.color(0,0,0) : Renderer.color(0,255,0);
+            let c = st==="TARGET"?Renderer.color(255,0,0) : st==="INVINCIBLE"?Renderer.color(170,0,255) : st==="LEGENDARY"?Renderer.color(0,0,0) : Renderer.color(0,255,255);
             Renderer.drawRect(c, rx+rotX*1.5-1, ry+rotY*1.5-1, 3, 3);
         }
     });
@@ -101,64 +100,11 @@ register("renderWorld", () => {
         let st = S.getStatus(n);
         if (st === "NONE") return;
         if (Player.asPlayerMP().distanceTo(p) < 60) {
-            let txt = "§a★ Solus ★", h = 0.5, sc = 0.03;
+            let txt = "§b★ Solus ★", h = 0.5, sc = 0.03;
             if (st === "TARGET") txt = "§c⚠ CIBLE ⚠";
             else if (st === "INVINCIBLE") txt = "§d§l🛡 GOD 🛡";
             else if (st === "LEGENDARY") { txt = "§4§l☠ "+S.getRole(n).toUpperCase()+" ☠"; h = 0.8; sc = 0.04; }
             Tessellator.drawString(txt, p.getRenderX(), p.getRenderY()+p.getHeight()+h, p.getRenderZ(), 0, true, sc, false);
-        }
-    });
-});
-
-// Tablist & Mute Global/Chat
-register("tick", () => {
-    if (!World.isLoaded()) return;
-    try {
-        let sb = World.getWorld().func_96441_U();
-        let tL = sb.func_96508_e("00_L")||sb.func_96527_f("00_L"); tL.func_96666_b("§4§lDieu §c");
-        let tG = sb.func_96508_e("01_G")||sb.func_96527_f("01_G"); tG.func_96666_b("§d§lGod §d");
-        let tF = sb.func_96508_e("02_F")||sb.func_96527_f("02_F"); tF.func_96666_b("§b§lSolus §b");
-        let tT = sb.func_96508_e("03_T")||sb.func_96527_f("03_T"); tT.func_96666_b("§c§lTarget §c");
-        let nh = Client.getMinecraft().func_147114_u();
-        let it = nh.func_175106_d().iterator();
-        let CCT = Java.type("net.minecraft.util.ChatComponentText");
-        while(it.hasNext()) {
-            let inf = it.next();
-            let n = inf.func_178845_a().getName();
-            let st = S.getStatus(n);
-            if(st!=="NONE") {
-                let tm = st==="LEGENDARY"?tL : st==="INVINCIBLE"?tG : st==="TARGET"?tT : tF;
-                let tn = st==="LEGENDARY"?"00_L" : st==="INVINCIBLE"?"01_G" : st==="TARGET"?"03_T" : "02_F";
-                let col = st==="LEGENDARY"?"§c" : st==="INVINCIBLE"?"§d" : st==="TARGET"?"§c" : "§b";
-                if(!tm.func_96665_g().contains(n)) sb.func_151392_a(n, tn);
-                let dn = inf.func_178854_k();
-                if(dn==null || dn.func_150254_d().indexOf(col)==-1) inf.func_178859_a(new CCT(col+n));
-            }
-        }
-    } catch(e){}
-});
-
-register("chat", (e) => {
-    if (e.isCanceled()) return;
-    let m = ChatLib.getChatMessage(e, false);
-    let c = ChatLib.removeFormatting(m).toLowerCase();
-    
-    for (let b of S.cloud.blacklist) if (c.indexOf(b.toLowerCase()) !== -1 && c.indexOf(b.toLowerCase()) < 15) { cancel(e); return; }
-    for (let k of Object.keys(S.config.muted)) if (c.indexOf(k) !== -1 && c.indexOf(k) < 15) { cancel(e); return; }
-
-    if (!S.config.chatHighlight) return;
-    let mColor = ChatLib.getChatMessage(e, true);
-    let clean = ChatLib.removeFormatting(mColor);
-    let all =[...S.config.friends, ...S.cloud.friends, ...S.cloud.invincibles, ...S.cloud.targets];
-    S.cloud.legendaries.forEach(l => all.push(l.pseudo));
-    
-    all.forEach(f => {
-        if(clean.indexOf(f+":")!=-1 || clean.indexOf(f+">")!=-1) {
-            cancel(e);
-            let st = S.getStatus(f);
-            let col = st==="TARGET"?"§c§l" : st==="INVINCIBLE"?"§d§l" : st==="LEGENDARY"?"§4§l☠ " : "§b§l";
-            ChatLib.chat(mColor.replace(new RegExp(f, "i"), col+f+"§r"));
-            if(st!=="TARGET") World.playSound("note.pling", 1, 2);
         }
     });
 });
