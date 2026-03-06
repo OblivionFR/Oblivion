@@ -6,8 +6,8 @@ if (!global.Solus) {
         config: new PogObject("SolusClient", {
             friends: [], muted: {}, pvpEnabled: false, 
             chatHighlight: true, esp3D: true, radar: true, proximityAlert: true, targetHud: true,
-            chatFilter: true, chatDelete: true 
-        }, "solus_data_v5.json"),
+            chatFilter: true, chatDelete: true, showWaypoints: true, friendHud: true, comboCounter: true
+        }, "solus_data_v6.json"),
         cloud: { legendaries: [], friends: [], invincibles: [], targets: [], blacklist: [], filters: [], motd: "", objective: "" }
     };
 }
@@ -16,24 +16,21 @@ const S = global.Solus;
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/SolusClient/";
 let lastSync = 0;
 
-// Fonctions Utilitaires
+// Nettoyage texte
 function clean(str) { return str ? str.replace(/[^a-zA-Z0-9_]/g, "").trim() : ""; }
-
-function fetchList(filename, time) {
+function fetchList(filename, t) {
     try {
-        let c = FileLib.getUrlContent(GITHUB_BASE + filename + time);
+        let c = FileLib.getUrlContent(GITHUB_BASE + filename + t);
         return c ? c.split("\n").map(s => s.trim()).filter(s => s.length > 1) : [];
     } catch (e) { return []; }
 }
 
-// Synchro Cloud
 function syncCloudData(verbose) {
     new Thread(() => {
         try {
             let t = "?t=" + Date.now();
             let cl = S.cloud;
 
-            // JSON
             let jsonRaw = FileLib.getUrlContent(GITHUB_BASE + "legendary_chars.json" + t);
             if (jsonRaw && jsonRaw.includes("{")) {
                 try {
@@ -42,14 +39,12 @@ function syncCloudData(verbose) {
                 } catch(e){}
             }
 
-            // Listes
             cl.friends = fetchList("default_friend.txt", t);
             cl.invincibles = fetchList("invincible.txt", t);
             cl.targets = fetchList("target.txt", t);
             cl.blacklist = fetchList("blacklist.txt", t);
-            cl.filters = fetchList("chat_filter.txt", t); // Regex Filtre
+            cl.filters = fetchList("chat_filter.txt", t);
 
-            // Textes
             let obj = FileLib.getUrlContent(GITHUB_BASE + "objective.txt" + t);
             cl.objective = obj ? obj.trim() : "";
             
@@ -63,15 +58,14 @@ function syncCloudData(verbose) {
                     World.playSound("random.levelup", 1, 1);
                 }
             }
-
             lastSync = Date.now();
-            if (verbose) ChatLib.chat(S.prefix + "§aCloud Synchronisé (" + cl.legendaries.length + " Dieux) !");
+            if (verbose) ChatLib.chat(S.prefix + "§aCloud Synchronisé !");
         } catch (e) {}
     }).start();
 }
 register("step", () => { if (Date.now() - lastSync > 30000) syncCloudData(false); }).setDelay(1);
 
-// Hiérarchie
+// Helpers Globaux
 global.Solus.getStatus = function(name) {
     if (!name) return "NONE";
     let l = clean(ChatLib.removeFormatting(name)).toLowerCase();
@@ -88,45 +82,68 @@ global.Solus.getRole = function(name) {
     return "Dieu";
 };
 
-// COMMANDES GLOBALES
+// --- COMMANDE HUB /SOLUS ---
 register("command", (...args) => {
     if (!args || args.length === 0) {
         ChatLib.chat("§3§m---------------------------------------------");
-        ChatLib.chat("§b§lSolus Client §7(v14.0)");
+        ChatLib.chat("§b§lSolus Client §7- Hub");
         ChatLib.chat("§3/solus friend <add|remove|list> §7- Amis");
-        ChatLib.chat("§3/solus toggle <opt>             §7- pvp/esp/radar/filter/delete");
-        ChatLib.chat("§3/solus force                    §7- MAJ Cloud");
-        ChatLib.chat("");
-        ChatLib.chat("§b§lMutes & Modération :");
-        ChatLib.chat("§3/smute <pseudo> [tps]           §7- Mute local");
-        ChatLib.chat("§3/sunmute <pseudo>               §7- Unmute");
+        ChatLib.chat("§3/solus mute <pseudo> [tps]      §7- Muter (ou /smute)");
+        ChatLib.chat("§3/solus unmute <pseudo>          §7- Démuter");
+        ChatLib.chat("§3/solus toggle <opt>             §7- pvp/esp/radar/hud/wp");
+        ChatLib.chat("§3/solus force                    §7- Force Update Cloud");
         ChatLib.chat("§3/smutegui                       §7- Interface Mute");
-        ChatLib.chat("§3/smute list                     §7- Liste des mutes");
         ChatLib.chat("§3§m---------------------------------------------");
         return;
     }
-    let a = args[0].toLowerCase();
-
-    if (a === "force") { ChatLib.chat(S.prefix + "§eForçage..."); syncCloudData(true); }
-    else if (a === "add" && args[1]) {
-        if (!S.config.friends.includes(args[1])) { S.config.friends.push(args[1]); S.config.save(); ChatLib.chat(S.prefix + "§aAjouté."); }
-    }
-    else if (a === "remove" && args[1]) {
-        S.config.friends = S.config.friends.filter(x => x.toLowerCase() !== args[1].toLowerCase()); S.config.save(); ChatLib.chat(S.prefix + "§cRetiré.");
-    }
-    else if (a === "list") ChatLib.chat("§6Cloud: " + S.cloud.friends.length + " Amis / " + S.cloud.filters.length + " Filtres");
     
-    else if (a === "toggle" && args[1]) {
+    let cat = args[0].toLowerCase();
+
+    // Gestion /solus friend
+    if (cat === "friend") {
+        let act = args[1];
+        let target = args[2];
+        if (act === "add" && target) {
+            if (!S.config.friends.includes(target)) { S.config.friends.push(target); S.config.save(); ChatLib.chat(S.prefix + "§aAmi ajouté : " + target); }
+            else ChatLib.chat(S.prefix + "§cDéjà ami.");
+        }
+        else if (act === "remove" && target) {
+            S.config.friends = S.config.friends.filter(x => x.toLowerCase() !== target.toLowerCase()); S.config.save(); ChatLib.chat(S.prefix + "§cAmi retiré : " + target);
+        }
+        else if (act === "list") {
+            ChatLib.chat("§6Cloud: §a" + S.cloud.friends.length + " Amis / §c" + S.cloud.legendaries.length + " Dieux");
+            ChatLib.chat("§3Local: " + S.config.friends.join(", "));
+        }
+    }
+    // Gestion /solus mute (Redirection)
+    else if (cat === "mute") {
+        if (args[1]) ChatLib.command("smute " + args.slice(1).join(" "), true);
+        else ChatLib.chat(S.prefix + "Usage: /solus mute <pseudo> [temps]");
+    }
+    // Gestion /solus unmute
+    else if (cat === "unmute") {
+        if (args[1]) ChatLib.command("sunmute " + args[1], true);
+    }
+    // Gestion Options
+    else if (cat === "toggle" && args[1]) {
         let o = args[1].toLowerCase();
         if(o=="pvp") S.config.pvpEnabled = !S.config.pvpEnabled;
         if(o=="radar") S.config.radar = !S.config.radar;
         if(o=="esp") S.config.esp3D = !S.config.esp3D;
+        if(o=="hud") S.config.targetHud = !S.config.targetHud;
+        if(o=="wp") S.config.showWaypoints = !S.config.showWaypoints;
         if(o=="filter") S.config.chatFilter = !S.config.chatFilter;
         if(o=="delete") S.config.chatDelete = !S.config.chatDelete;
-        S.config.save(); ChatLib.chat(S.prefix + "Option " + o + " changée.");
+        S.config.save(); ChatLib.chat(S.prefix + "Option §e" + o + " §fmise à jour.");
+    }
+    // Debug
+    else if (cat === "force") {
+        ChatLib.chat(S.prefix + "§eTéléchargement forcé...");
+        syncCloudData(true);
     }
 }).setName("solus").setAliases("sf");
 
+// Raccourci PvP
 register("command", () => {
     S.config.pvpEnabled = !S.config.pvpEnabled; S.config.save();
     ChatLib.chat(S.prefix + "PvP Ami: " + (S.config.pvpEnabled ? "§cON" : "§aOFF"));
