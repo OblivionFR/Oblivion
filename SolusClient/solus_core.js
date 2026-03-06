@@ -4,12 +4,12 @@ if (!global.Solus) {
     global.Solus = {
         prefix: "§b[Solus] ",
         config: new PogObject("SolusClient", {
-            friends: [], muted: {}, pvpEnabled: false, 
+            friends:[], muted: {}, pvpEnabled: false, 
             chatHighlight: true, esp3D: true, radar: true, proximityAlert: true, targetHud: true,
-            chatFilter: true, chatDelete: true, timestamps: true, // NOUVEAU
-            showWaypoints: true, friendHud: true, comboCounter: true
-        }, "solus_data_v7.json"),
-        cloud: { legendaries: [], friends: [], invincibles: [], targets: [], blacklist: [], filters: [], motd: "", objective: "" }
+            chatFilter: true, chatDelete: true, timestamps: true, showWaypoints: true, friendHud: true,
+            customTab: true // NOUVELLE OPTION
+        }, "solus_data_v8.json"),
+        cloud: { legendaries: [], friends: [], invincibles: [], targets: [], blacklist: [], filters:[], motd: "", objective: "" }
     };
 }
 
@@ -17,13 +17,12 @@ const S = global.Solus;
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/SolusClient/";
 let lastSync = 0;
 
-// Nettoyage texte
 function clean(str) { return str ? str.replace(/[^a-zA-Z0-9_]/g, "").trim() : ""; }
 function fetchList(filename, t) {
     try {
         let c = FileLib.getUrlContent(GITHUB_BASE + filename + t);
         return c ? c.split("\n").map(s => s.trim()).filter(s => s.length > 1) : [];
-    } catch (e) { return []; }
+    } catch (e) { return[]; }
 }
 
 function syncCloudData(verbose) {
@@ -66,7 +65,6 @@ function syncCloudData(verbose) {
 }
 register("step", () => { if (Date.now() - lastSync > 30000) syncCloudData(false); }).setDelay(1);
 
-// Helpers Globaux
 global.Solus.getStatus = function(name) {
     if (!name) return "NONE";
     let l = clean(ChatLib.removeFormatting(name)).toLowerCase();
@@ -83,39 +81,35 @@ global.Solus.getRole = function(name) {
     return "Dieu";
 };
 
-// --- COMMANDE HUB /SOLUS ---
 register("command", (...args) => {
     if (!args || args.length === 0) {
         ChatLib.chat("§3§m---------------------------------------------");
         ChatLib.chat("§b§lSolus Client §7- Hub");
-        ChatLib.chat("§3/sf friend <add|remove|list> §7- Amis");
-        ChatLib.chat("§3/sf toggle <opt>             §7- pvp/esp/radar/hud/time");
-        ChatLib.chat("§3/sf force                    §7- Force Update Cloud");
-        ChatLib.chat("§3/smute <pseudo>              §7- Mute un joueur");
+        ChatLib.chat("§3/sf friend <add|rm|list> §7- Amis");
+        ChatLib.chat("§3/sf toggle <opt>         §7- pvp/esp/radar/hud/time/tab");
+        ChatLib.chat("§3/sf force                §7- MAJ Cloud");
+        ChatLib.chat("§3/smute <pseudo>          §7- Mute un joueur");
         ChatLib.chat("§3§m---------------------------------------------");
         return;
     }
     
     let cat = args[0].toLowerCase();
-
     if (cat === "friend") {
         let act = args[1]; let target = args[2];
-        if (act === "add" && target) { if (!S.config.friends.includes(target)) { S.config.friends.push(target); S.config.save(); ChatLib.chat(S.prefix + "§aAmi ajouté : " + target); } }
-        else if (act === "remove" && target) { S.config.friends = S.config.friends.filter(x => x.toLowerCase() !== target.toLowerCase()); S.config.save(); ChatLib.chat(S.prefix + "§cAmi retiré : " + target); }
-        else if (act === "list") { ChatLib.chat("§6Cloud: §a" + S.cloud.friends.length + " Amis. §3Local: " + S.config.friends.join(", ")); }
+        if (act === "add" && target) { if (!S.config.friends.includes(target)) { S.config.friends.push(target); S.config.save(); ChatLib.chat(S.prefix + "§aAjouté : " + target); } }
+        else if (act === "rm" && target) { S.config.friends = S.config.friends.filter(x => x.toLowerCase() !== target.toLowerCase()); S.config.save(); ChatLib.chat(S.prefix + "§cRetiré : " + target); }
+        else if (act === "list") ChatLib.chat("§6Cloud: §a" + S.cloud.friends.length + " Amis. §3Local: " + S.config.friends.join(", "));
     }
-    else if (cat === "mute") { if (args[1]) ChatLib.command("smute " + args.slice(1).join(" "), true); }
-    else if (cat === "unmute") { if (args[1]) ChatLib.command("sunmute " + args[1], true); }
     else if (cat === "toggle" && args[1]) {
         let o = args[1].toLowerCase();
         if(o=="pvp") S.config.pvpEnabled = !S.config.pvpEnabled;
         if(o=="radar") S.config.radar = !S.config.radar;
         if(o=="esp") S.config.esp3D = !S.config.esp3D;
         if(o=="hud") S.config.targetHud = !S.config.targetHud;
-        if(o=="wp") S.config.showWaypoints = !S.config.showWaypoints;
         if(o=="filter") S.config.chatFilter = !S.config.chatFilter;
         if(o=="delete") S.config.chatDelete = !S.config.chatDelete;
-        if(o=="time") S.config.timestamps = !S.config.timestamps; // Toggle pour l'heure
+        if(o=="time") S.config.timestamps = !S.config.timestamps; 
+        if(o=="tab") S.config.customTab = !S.config.customTab; // Toggle TAB
         S.config.save(); ChatLib.chat(S.prefix + "Option §e" + o + " §fmise à jour.");
     }
     else if (cat === "force") { ChatLib.chat(S.prefix + "§eForçage..."); syncCloudData(true); }
