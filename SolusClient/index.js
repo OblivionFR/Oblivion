@@ -1,10 +1,10 @@
 // ==========================================
-// SOLUS CLIENT - STABLE LOADER (ANTI-LOOP)
+// SOLUS CLIENT - SMART LOADER (Fix Boucle)
 // ==========================================
 const CLIENT_NAME = "SolusClient";
 const GITHUB_BASE = "https://raw.githubusercontent.com/OblivionFR/Oblivion/main/SolusClient/";
 
-// Liste complète des fichiers (y compris le nouveau filtre)
+// Liste de TOUS les fichiers du module
 const FILES = [
     "solus_core.js", 
     "solus_friend.js", 
@@ -12,17 +12,14 @@ const FILES = [
     "solus_combat.js", 
     "solus_waypoints.js", 
     "solus_chat.js",
-    "solus_filter.js" // Le nouveau module
+    "solus_filter.js"
 ];
 
-// Numéro de version du loader (Change-le sur Github pour forcer la maj du index.js lui-même)
-const LOADER_VERSION = "16.0"; 
-
-// Fonction de nettoyage : Retire TOUS les espaces/sauts de ligne pour la comparaison
-// C'est ça qui empêche la boucle infinie !
-function clean(str) {
+// Fonction pour normaliser le texte (Rend compatible Windows/Linux pour la comparaison)
+function normalize(str) {
     if (!str) return "";
-    return str.replace(/\s+/g, ""); 
+    // Remplace les retours à la ligne Windows (\r\n) par Unix (\n) et enlève les espaces inutiles au début/fin
+    return str.replace(/\r\n/g, "\n").trim();
 }
 
 global.SolusUpdater = {
@@ -30,46 +27,51 @@ global.SolusUpdater = {
         new Thread(() => {
             try {
                 let needsReload = false;
+                let updatedList = [];
 
-                // 1. Vérification du Loader (index.js) par Numéro de Version
+                // 1. Vérification du Loader lui-même (index.js)
+                // On utilise un paramètre de temps ?t=... pour éviter le cache
                 let remoteIndex = FileLib.getUrlContent(GITHUB_BASE + "index.js?t=" + Date.now());
-                if (remoteIndex) {
-                    let match = remoteIndex.match(/const LOADER_VERSION = "([0-9.]+)";/);
-                    if (match && match[1] !== LOADER_VERSION) {
-                        ChatLib.chat("§b[Solus] §eMise à jour du Loader détectée !");
-                        FileLib.write(CLIENT_NAME, "index.js", remoteIndex);
-                        needsReload = true;
-                    }
+                let localIndex = FileLib.read(CLIENT_NAME, "index.js");
+
+                if (remoteIndex && normalize(remoteIndex) !== normalize(localIndex)) {
+                    print("[Solus] Mise à jour du Loader (index.js)...");
+                    FileLib.write(CLIENT_NAME, "index.js", remoteIndex);
+                    needsReload = true;
                 }
 
-                // 2. Vérification des Modules par Comparaison de Contenu Nettoyé
-                FILES.forEach(f => {
-                    let url = GITHUB_BASE + f + "?t=" + Date.now();
+                // 2. Vérification des autres fichiers
+                FILES.forEach(file => {
+                    let url = GITHUB_BASE + file + "?t=" + Date.now();
                     let remoteContent = FileLib.getUrlContent(url);
                     
-                    if (remoteContent && remoteContent.length > 50) {
-                        let localContent = FileLib.read(CLIENT_NAME, f);
+                    if (remoteContent && remoteContent.length > 10) {
+                        let localContent = FileLib.read(CLIENT_NAME, file);
                         
-                        // Si le fichier n'existe pas OU si le contenu nettoyé est différent
-                        if (!FileLib.exists(CLIENT_NAME, f) || clean(localContent) !== clean(remoteContent)) {
-                            print("[Solus] Mise à jour détectée pour : " + f);
-                            FileLib.write(CLIENT_NAME, f, remoteContent);
+                        // Si le fichier n'existe pas OU si le contenu est différent (après normalisation)
+                        if (!FileLib.exists(CLIENT_NAME, file) || normalize(localContent) !== normalize(remoteContent)) {
+                            print("[Solus] Modification détectée : " + file);
+                            FileLib.write(CLIENT_NAME, file, remoteContent);
+                            updatedList.push(file);
                             needsReload = true;
                         }
                     }
                 });
 
-                // 3. Rechargement unique si nécessaire
+                // 3. Gestion du redémarrage
                 if (needsReload) {
-                    ChatLib.chat("§b[Solus] §aMise à jour terminée. Rechargement...");
-                    setTimeout(() => ChatLib.command("ct load", true), 2000);
+                    ChatLib.chat("§b[Solus] §aMise à jour effectuée (" + updatedList.length + " fichiers).");
+                    ChatLib.chat("§b[Solus] §7Rechargement automatique...");
+                    Thread.sleep(1500); // Petite pause pour laisser le temps d'écrire
+                    ChatLib.command("ct load", true);
                 } else {
-                    // Si pas de maj, on lance les modules
+                    // Si tout est pareil, on charge
                     loadModules();
                 }
 
             } catch(e) {
-                print("[Solus] Erreur Update (Pas grave, lancement local) : " + e);
+                print("[Solus] Erreur de vérification (Pas de connexion ?) : " + e);
+                // En cas d'erreur, on essaie quand même de charger ce qu'on a
                 loadModules();
             }
         }).start();
@@ -78,7 +80,7 @@ global.SolusUpdater = {
 
 function loadModules() {
     try {
-        // Chargement dans l'ordre
+        // Chargement de tous les sous-fichiers
         require("./solus_core.js");
         require("./solus_chat.js");
         require("./solus_friend.js");
@@ -88,9 +90,9 @@ function loadModules() {
         require("./solus_filter.js");
         print("[Solus] Modules chargés avec succès.");
     } catch(e) {
-        ChatLib.chat("§c[Solus] Erreur au lancement des modules : " + e);
+        ChatLib.chat("§c[Solus] Erreur au lancement : " + e);
     }
 }
 
-// Lancement
+// Lancer la vérification au démarrage
 global.SolusUpdater.check();
