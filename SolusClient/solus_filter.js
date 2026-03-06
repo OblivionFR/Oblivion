@@ -16,14 +16,14 @@ register("command", (...args) => {
     if (action === "add" && args[1]) {
         let toAdd = args.slice(1).join(" ");
         if (!S.data.filters.includes(toAdd)) {
-            S.data.filters.push(toAdd); S.data.save();
+            S.data.filters.push(toAdd); S.saveData();
             ChatLib.chat(S.prefix + "§aFiltre ajouté : §f" + toAdd);
         }
     }
     else if (action === "remove" && args[1]) {
         let toRm = args.slice(1).join(" ");
         let i = S.data.filters.indexOf(toRm);
-        if (i !== -1) { S.data.filters.splice(i, 1); S.data.save(); ChatLib.chat(S.prefix + "§cFiltre retiré : §f" + toRm); }
+        if (i !== -1) { S.data.filters.splice(i, 1); S.saveData(); ChatLib.chat(S.prefix + "§cFiltre retiré : §f" + toRm); }
     }
     else if (action === "list") {
         ChatLib.chat("§3Filtres (" + S.data.filters.length + ") :");
